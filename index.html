@@ -1,0 +1,42 @@
+<head>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.4.0/gl-matrix.js"></script>
+
+<script id="shader-fs" type="x-shader/x-fragment">
+  precision mediump float;
+  
+  varying vec3 output_color;
+
+  void main(void) {
+    gl_FragColor = vec4(output_color.xyz, 1.0);
+  }
+</script>
+
+
+
+<script id="shader-vs" type="x-shader/x-vertex">
+  attribute vec3 position;
+  attribute vec3 color;
+  attribute vec3 model_position;
+  
+  uniform mat4 model;
+  uniform mat4 view;
+  uniform mat4 projection;
+  
+  varying vec3 output_color;
+
+  void main(void) {
+    vec3 final_position = position + model_position;
+    gl_Position = projection * view * model * vec4(final_position.xyz, 1.0);
+    //gl_Position = projection * view * vec4(final_position.xyz, 1.0);
+    output_color = color;
+  }
+</script>
+
+<body>
+<canvas id="canvas">
+
+<script src="test.js"></script>
+</body>
