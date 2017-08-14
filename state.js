@@ -34,7 +34,8 @@ var shader_program;
 var array_buffer;
 var indices_buffer;
 var instance_buffer;
-var instance_array_of_hexes;
+var tex_coords_buffer;
+var instance_arrays_of_hexes;
 
 // engine state
 var last_time = 0;

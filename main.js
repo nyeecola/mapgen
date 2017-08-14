@@ -61,15 +61,6 @@ function draw(time)
 	let model = mat4.create();
 	gl.uniformMatrix4fv(model_loc, gl.FALSE, model);
 
-
-	gl.activeTexture(gl.TEXTURE0);
-	gl.bindTexture(gl.TEXTURE_2D, test_texture);
-	gl.uniform1i(gl.getUniformLocation(shader_program, 'texture_sampler'), 0);
-
-	let tex_coord_loc = gl.getAttribLocation(shader_program, 'p_tex_coord');
-	gl.enableVertexAttribArray(tex_coord_loc);
-	gl.vertexAttribPointer(tex_coord_loc,2,gl.FLOAT,gl.FALSE,3 * 4,0);
-
 	if (!ext) {
 		// TODO
 		/*
@@ -104,24 +95,59 @@ function draw(time)
 		ext.vertexAttribDivisorANGLE(model_pos_loc, 1);
 
 		let color_loc = gl.getAttribLocation(shader_program, "color");
-		gl.enableVertexAttribArray(color_loc);
-		gl.vertexAttribPointer(color_loc, 3, gl.FLOAT, gl.FALSE, 6 * 4, 3 * 4);
-		ext.vertexAttribDivisorANGLE(color_loc, 1);
 
-		// upload data
-		gl.bufferData(gl.ARRAY_BUFFER, instance_array_of_hexes, gl.STATIC_DRAW);
+		for (let array in instance_arrays_of_hexes)
+		{
+			gl.bindBuffer(gl.ARRAY_BUFFER, instance_buffer);
 
-		// draw tiles
-		ext.drawElementsInstancedANGLE(gl.TRIANGLES, hex_indices.length, gl.UNSIGNED_SHORT, 0, hexes.length);
+			gl.enableVertexAttribArray(color_loc);
+			gl.vertexAttribPointer(color_loc, 3, gl.FLOAT, gl.FALSE, 6 * 4, 3 * 4);
+			ext.vertexAttribDivisorANGLE(color_loc, 1);
 
-		// draw outline
-		let model = mat4.create();
-		model = mat4.translate(model, model, vec3.fromValues(0, 0, 0.001));
-		gl.uniformMatrix4fv(model_loc, gl.FALSE, model);
+			if (array === 'desert')
+			{
+				let tex_coords = [0, 0.33, 0.5, 0, 1, 0.33, 1, 0.67, 0.5, 1, 0, 0.67];
+				gl.bindBuffer(gl.ARRAY_BUFFER, tex_coords_buffer);
+				// TODO: remove this from the loop
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tex_coords), gl.STATIC_DRAW);
 
-		gl.disableVertexAttribArray(color_loc);
-		gl.vertexAttrib3f(color_loc, 0, 0, 0);
-		ext.drawArraysInstancedANGLE(gl.LINE_LOOP, 0, hex_verts.length/3, hexes.length);
+				let tex_coord_loc = gl.getAttribLocation(shader_program, 'p_tex_coord');
+				gl.enableVertexAttribArray(tex_coord_loc);
+				gl.vertexAttribPointer(tex_coord_loc,2,gl.FLOAT,gl.FALSE,2 * 4,0);
+
+				gl.activeTexture(gl.TEXTURE0);
+				gl.bindTexture(gl.TEXTURE_2D, test_texture);
+				gl.uniform1i(gl.getUniformLocation(shader_program, 'texture_sampler'), 0);
+
+				let tex_enable_loc = gl.getUniformLocation(shader_program, "texture_enabled");
+				gl.uniform1i(tex_enable_loc, 1);
+			}
+			else
+			{
+				let tex_enable_loc = gl.getUniformLocation(shader_program, "texture_enabled");
+				gl.uniform1i(tex_enable_loc, 0);
+			}
+
+			gl.bindBuffer(gl.ARRAY_BUFFER, instance_buffer);
+
+			// upload data
+			gl.bufferData(gl.ARRAY_BUFFER, instance_arrays_of_hexes[array], gl.STATIC_DRAW);
+
+			// draw tiles
+			ext.drawElementsInstancedANGLE(gl.TRIANGLES, hex_indices.length, gl.UNSIGNED_SHORT, 0, instance_arrays_of_hexes[array].length/6);
+
+			// draw outline
+			let model = mat4.create();
+			model = mat4.translate(model, model, vec3.fromValues(0, 0, 0.001));
+			gl.uniformMatrix4fv(model_loc, gl.FALSE, model);
+
+			let tex_enable_loc = gl.getUniformLocation(shader_program, "texture_enabled");
+			gl.uniform1i(tex_enable_loc, 0);
+
+			gl.disableVertexAttribArray(color_loc);
+			gl.vertexAttrib3f(color_loc, 0, 0, 0);
+			ext.drawArraysInstancedANGLE(gl.LINE_LOOP, 0, hex_verts.length/3, instance_arrays_of_hexes[array].length/6);
+		}
 	}
 
 	requestAnimationFrame(draw)
@@ -237,6 +263,7 @@ function main()
 	array_buffer = gl.createBuffer();
 	indices_buffer = gl.createBuffer();
 	instance_buffer = gl.createBuffer();
+	tex_coords_buffer = gl.createBuffer()
 
 	camera = create_camera(-6, -2.5, -2.8);
 
@@ -248,11 +275,11 @@ function main()
 	let image = new Image();
 	image.crossOrigin = 'anonymous';
 	image.onload = function() { handle_texture_loaded(image, test_texture); }.bind(image, test_texture)
-	image.src = 'http://i.imgur.com/IlsnC1x.jpg';
+	image.src = 'http://2.bp.blogspot.com/-dL5H7uMEKnU/T557xh492ZI/AAAAAAAAAfY/1-kmB4HJf3k/s1600/paper_texture_by_akinna_stock.png';
 
 	
 
-	instance_array_of_hexes = create_hexes_instance_array(hexes);
+	instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
 
 	requestAnimationFrame(draw);
 }

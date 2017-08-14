@@ -22,18 +22,28 @@ function hex_corners(x, y)
 		angle_rad = Math.PI / 180 * angle_deg;
 		hex_verts = hex_verts.concat([x + radius * Math.cos(angle_rad), y + radius * Math.sin(angle_rad), 0]);
 	}
+
 	return hex_verts;
 }
 
-function create_hexes_instance_array(hexes)
+function create_hexes_instance_arrays(hexes)
 {
-	hexes_instance_array = [];
+	hexes_instance_arrays = {};
 
 	for (let hex of hexes) {
-		hexes_instance_array = hexes_instance_array.concat([hex.x, hex.y, 0, hex_types[hex.type][0], hex_types[hex.type][1], hex_types[hex.type][2]]);
+		if(!hexes_instance_arrays.hasOwnProperty(hex.type))
+		{
+			hexes_instance_arrays[hex.type] = [];
+		}
+		hexes_instance_arrays[hex.type] = hexes_instance_arrays[hex.type].concat([hex.x, hex.y, 0, hex_types[hex.type][0], hex_types[hex.type][1], hex_types[hex.type][2]]);
 	}
 
-	return new Float32Array(hexes_instance_array);
+	for (let array in hexes_instance_arrays)
+	{
+		hexes_instance_arrays[array] = new Float32Array(hexes_instance_arrays[array]);
+	}
+
+	return hexes_instance_arrays;
 }
 
 function get_hex_at(x, y)

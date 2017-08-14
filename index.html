@@ -11,13 +11,22 @@
   varying vec2 tex_coord;
 
   uniform sampler2D texture_sampler;
+  uniform int texture_enabled;
 
   void main(void)
   {
-    //gl_FragColor = vec4(output_color.xyz, 1.0);
+    vec4 temp_frag_color;
+    if (texture_enabled == 0)
+    {
+      temp_frag_color = vec4(output_color.xyz, 1.0);
+    }
+    else
+    {
+      //temp_frag_color = vec4(output_color.xyz, 1.0);
+      temp_frag_color = texture2D(texture_sampler, tex_coord);
+    }
 
-    vec4 temp_color = texture2D(texture_sampler, tex_coord);
-    gl_FragColor = vec4(temp_color.x * output_color.x, temp_color.y * output_color.y, temp_color.z * output_color.z, 1.0);
+    gl_FragColor = temp_frag_color;
   }
 </script>
 
