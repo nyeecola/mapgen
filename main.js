@@ -1,3 +1,5 @@
+var test_texture;
+
 function create_camera(x, y, z)
 {
 	return {'x': x,
@@ -27,49 +29,58 @@ function draw(time)
 
 	gl.useProgram(shader_program);
 
-	var view = mat4.create();
+	let view = mat4.create();
 	view = mat4.rotate(view, view, glMatrix.toRadian(-50), vec3.fromValues(1.0, 0.0, 0.0));
 	view = mat4.translate(view, view, vec3.fromValues(camera.x, camera.y, camera.z));
 
-	var projection = mat4.create();
+	let projection = mat4.create();
 	projection = mat4.perspective(projection, glMatrix.toRadian(45), gl.drawingBufferWidth / gl.drawingBufferHeight, 0.1, 100);
 
-	var uniform_loc;
+	let uniform_loc;
 	uniform_loc = gl.getUniformLocation(shader_program, "view");
 	gl.uniformMatrix4fv(uniform_loc, gl.FALSE, view);
 	uniform_loc = gl.getUniformLocation(shader_program, "projection");
 	gl.uniformMatrix4fv(uniform_loc, gl.FALSE, projection);
 
-	var hex_indices = [0, 1, 2, 0, 2, 3, 0, 3, 5, 3, 4, 5];
+	let hex_indices = [0, 1, 2, 0, 2, 3, 0, 3, 5, 3, 4, 5];
 
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices_buffer);
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(hex_indices), gl.STATIC_DRAW);
 
 	// TODO: make this more readable, also it is way overcomplicated
-	var hex_verts = hex_corners(0, 0, 0.1);
+	let hex_verts = hex_corners(0, 0, 0.1);
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, array_buffer);
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(hex_verts), gl.STATIC_DRAW);
 
-	var vertexLocation = gl.getAttribLocation(shader_program,"position");
+	let vertexLocation = gl.getAttribLocation(shader_program,"position");
 	gl.enableVertexAttribArray(vertexLocation);
 	gl.vertexAttribPointer(vertexLocation,3,gl.FLOAT,gl.FALSE,3 * 4,0);
 
-	var model_loc = gl.getUniformLocation(shader_program, "model");
-	var model = mat4.create();
+	let model_loc = gl.getUniformLocation(shader_program, "model");
+	let model = mat4.create();
 	gl.uniformMatrix4fv(model_loc, gl.FALSE, model);
+
+
+	gl.activeTexture(gl.TEXTURE0);
+	gl.bindTexture(gl.TEXTURE_2D, test_texture);
+	gl.uniform1i(gl.getUniformLocation(shader_program, 'texture_sampler'), 0);
+
+	let tex_coord_loc = gl.getAttribLocation(shader_program, 'p_tex_coord');
+	gl.enableVertexAttribArray(tex_coord_loc);
+	gl.vertexAttribPointer(tex_coord_loc,2,gl.FLOAT,gl.FALSE,3 * 4,0);
 
 	if (!ext) {
 		// TODO
 		/*
-    		var model_loc = gl.getUniformLocation(shader_program, "model");
-    		var vertexColor = gl.getAttribLocation(shader_program, "color");
+    		let model_loc = gl.getUniformLocation(shader_program, "model");
+    		let vertexColor = gl.getAttribLocation(shader_program, "color");
     		for (let hex of hexes) {
 
 			// TEST
 	    		//if (Math.abs(camera.x - hex.x) > 20 || Math.abs(camera.y - hex.y) > 20) continue;
 
-      			var model = mat4.create();
+      			let model = mat4.create();
       			model = mat4.translate(model, model, vec3.fromValues(hex.x, hex.y, 0));
       			gl.uniformMatrix4fv(model_loc, gl.FALSE, model);
 
@@ -83,16 +94,16 @@ function draw(time)
       			gl.drawArrays(gl.LINE_LOOP, 0, hex_verts.length/2/3);
 		}*/
 	}
-	else {
-
+	else 
+	{
 		gl.bindBuffer(gl.ARRAY_BUFFER, instance_buffer);
 
-		var model_pos_loc = gl.getAttribLocation(shader_program, "model_position");
+		let model_pos_loc = gl.getAttribLocation(shader_program, "model_position");
 		gl.enableVertexAttribArray(model_pos_loc);
 		gl.vertexAttribPointer(model_pos_loc, 3, gl.FLOAT, gl.FALSE, 6 * 4, 0);
 		ext.vertexAttribDivisorANGLE(model_pos_loc, 1);
 
-		var color_loc = gl.getAttribLocation(shader_program, "color");
+		let color_loc = gl.getAttribLocation(shader_program, "color");
 		gl.enableVertexAttribArray(color_loc);
 		gl.vertexAttribPointer(color_loc, 3, gl.FLOAT, gl.FALSE, 6 * 4, 3 * 4);
 		ext.vertexAttribDivisorANGLE(color_loc, 1);
@@ -104,7 +115,7 @@ function draw(time)
 		ext.drawElementsInstancedANGLE(gl.TRIANGLES, hex_indices.length, gl.UNSIGNED_SHORT, 0, hexes.length);
 
 		// draw outline
-		var model = mat4.create();
+		let model = mat4.create();
 		model = mat4.translate(model, model, vec3.fromValues(0, 0, 0.001));
 		gl.uniformMatrix4fv(model_loc, gl.FALSE, model);
 
@@ -124,28 +135,28 @@ function main()
 	hexes = []
 
 	// choose elevation position
-	//var num_elevations = 1 + Math.floor(Math.random() * max_elevations);
-	var num_elevations = 2;
-	var elevations = [];
+	//let num_elevations = 1 + Math.floor(Math.random() * max_elevations);
+	let num_elevations = 2;
+	let elevations = [];
 	
-	for (var i = 0; i < num_elevations; i++)
+	for (let i = 0; i < num_elevations; i++)
 	{
 		elevations.push([]);
 		elevations[i].push(Math.floor(columns / num_elevations * i + columns / num_elevations / 2));
 		elevations[i].push(Math.floor(rows / 2));
 	}
 
-	var start_x = 0;
-	var width = Math.sqrt(3)/2 * radius;
-	for (var j = 0; j < columns; j++) {
-		for (var i = 0; i < rows; i++) {
-			var hex = create_hex(i * width + j * width * 2, i * 3/4 * 2 * radius, j, i);
+	let start_x = 0;
+	let width = Math.sqrt(3)/2 * radius;
+	for (let j = 0; j < columns; j++) {
+		for (let i = 0; i < rows; i++) {
+			let hex = create_hex(i * width + j * width * 2, i * 3/4 * 2 * radius, j, i);
 
-			var dist = columns + rows;
+			let dist = columns + rows;
 			hex.elevation = dist * num_elevations;
-			for (var k = 0; k < num_elevations; k++)
+			for (let k = 0; k < num_elevations; k++)
 			{
-				var cur_dist = hex_distance_points(j, i, elevations[k][0], elevations[k][1]);
+				let cur_dist = hex_distance_points(j, i, elevations[k][0], elevations[k][1]);
 				dist = Math.min(dist, cur_dist);
 				hex.elevation -= cur_dist;
 			}
@@ -155,13 +166,13 @@ function main()
 			hex.elevation -= 8.0/10;
 
 
-			var random_factor = Math.random() * 0.014;
+			let random_factor = Math.random() * 0.014;
 			random_factor -= 0.014 / 2;
 			hex.elevation += random_factor;
 
 			hex.elevation += perlin(j / 9.5, i / 9.5) * 0.26;
 
-			var types = Object.keys(hex_types);
+			let types = Object.keys(hex_types);
 
 			// top and bottom
 			if (hex.grid_y < 0.1 * rows || hex.grid_y > 0.9 * rows)
@@ -229,6 +240,18 @@ function main()
 
 	camera = create_camera(-6, -2.5, -2.8);
 
+
+
+	// TEST
+	// TODO: wait for image to be loaded before starting to render scene
+	test_texture = gl.createTexture();
+	let image = new Image();
+	image.crossOrigin = 'anonymous';
+	image.onload = function() { handle_texture_loaded(image, test_texture); }.bind(image, test_texture)
+	image.src = 'http://i.imgur.com/IlsnC1x.jpg';
+
+	
+
 	instance_array_of_hexes = create_hexes_instance_array(hexes);
 
 	requestAnimationFrame(draw);
@@ -236,3 +259,14 @@ function main()
 
 main();
 
+function handle_texture_loaded(image, texture)
+{
+	gl.bindTexture(gl.TEXTURE_2D, texture);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	gl.generateMipmap(gl.TEXTURE_2D);
+	gl.bindTexture(gl.TEXTURE_2D, null);
+}

@@ -8,9 +8,16 @@
   precision mediump float;
   
   varying vec3 output_color;
+  varying vec2 tex_coord;
 
-  void main(void) {
-    gl_FragColor = vec4(output_color.xyz, 1.0);
+  uniform sampler2D texture_sampler;
+
+  void main(void)
+  {
+    //gl_FragColor = vec4(output_color.xyz, 1.0);
+
+    vec4 temp_color = texture2D(texture_sampler, tex_coord);
+    gl_FragColor = vec4(temp_color.x * output_color.x, temp_color.y * output_color.y, temp_color.z * output_color.z, 1.0);
   }
 </script>
 
@@ -20,18 +27,21 @@
   attribute vec3 position;
   attribute vec3 color;
   attribute vec3 model_position;
+  attribute vec2 p_tex_coord;
   
   uniform mat4 model;
   uniform mat4 view;
   uniform mat4 projection;
   
   varying vec3 output_color;
+  varying vec2 tex_coord;
 
-  void main(void) {
+  void main(void)
+  {
     vec3 final_position = position + model_position;
     gl_Position = projection * view * model * vec4(final_position.xyz, 1.0);
-    //gl_Position = projection * view * vec4(final_position.xyz, 1.0);
     output_color = color;
+    tex_coord = p_tex_coord;
   }
 </script>
 

@@ -11,6 +11,7 @@
 //
 // Maintenance:
 // refactor rendering code
+// start using VAOs
 // start using static analysis since JS is bad
 // maybe rename some usage of hex to tile?
 // maybe refactor classes
