@@ -1,11 +1,3 @@
-function create_camera(x, y, z)
-{
-	return {'x': x,
-		'y': y,
-		'z': z,
-		'speed': 0.004};
-}
-
 function update_and_render(time)
 {
 	// update
@@ -31,15 +23,19 @@ function update_and_render(time)
 
 		gl.useProgram(shader_program);
 
+		// camera view matrix
 		let view = mat4.create();
 		view = mat4.rotate(view, view, glMatrix.toRadian(-50), vec3.fromValues(1.0, 0.0, 0.0));
 		view = mat4.translate(view, view, vec3.fromValues(camera.x, camera.y, camera.z));
 
+		// perspective projection matrix
 		let projection = mat4.create();
 		projection = mat4.perspective(projection, glMatrix.toRadian(45), gl.drawingBufferWidth / gl.drawingBufferHeight, 0.1, 100);
 
+		// model matrix
 		let model = mat4.create();
 
+		// upload all uniforms
 		let uniform_loc;
 		uniform_loc = gl.getUniformLocation(shader_program, "view");
 		gl.uniformMatrix4fv(uniform_loc, gl.FALSE, view);
@@ -48,74 +44,70 @@ function update_and_render(time)
 		uniform_loc = gl.getUniformLocation(shader_program, "model");
 		gl.uniformMatrix4fv(uniform_loc, gl.FALSE, model);
 
+
+		// upload data to indices buffer
 		let hex_indices = [0, 1, 2, 0, 2, 3, 0, 3, 5, 3, 4, 5];
+		{
 
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices_buffer);
-		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(hex_indices), gl.STATIC_DRAW);
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices_buffer);
+			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(hex_indices), gl.STATIC_DRAW);
+		}
 
+		// upload data to array_buffer
+		// attach buffer data to position attribute
 		// TODO: make this more readable, also it is way overcomplicated
 		let hex_verts = hex_corners(0, 0);
+		{
+			gl.bindBuffer(gl.ARRAY_BUFFER, array_buffer);
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(hex_verts), gl.STATIC_DRAW);
 
-		gl.bindBuffer(gl.ARRAY_BUFFER, array_buffer);
-		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(hex_verts), gl.STATIC_DRAW);
-
-		let vertexLocation = gl.getAttribLocation(shader_program,"position");
-		gl.enableVertexAttribArray(vertexLocation);
-		gl.vertexAttribPointer(vertexLocation,3,gl.FLOAT,gl.FALSE,3 * 4,0);
+			let attrib_loc = gl.getAttribLocation(shader_program, 'position');
+			gl.enableVertexAttribArray(attrib_loc);
+			gl.vertexAttribPointer(attrib_loc, 3, gl.FLOAT, gl.FALSE, 3 * 4, 0);
+		}
 
 		if (!ext) {
-			// TODO
-			/*
-		let model_loc = gl.getUniformLocation(shader_program, "model");
-		let vertexColor = gl.getAttribLocation(shader_program, "color");
-		for (let hex of hexes) {
-
-			// TEST
-			//if (Math.abs(camera.x - hex.x) > 20 || Math.abs(camera.y - hex.y) > 20) continue;
-
-			let model = mat4.create();
-			model = mat4.translate(model, model, vec3.fromValues(hex.x, hex.y, 0));
-			gl.uniformMatrix4fv(model_loc, gl.FALSE, model);
-
-			gl.vertexAttrib3f(vertexColor, hex.r, hex.g, hex.b);
-
-			gl.drawElements(gl.TRIANGLES,hex_indices.length,gl.UNSIGNED_SHORT,0);
-
-			model = mat4.translate(model, model, vec3.fromValues(0, 0, 0.001));
-			gl.uniformMatrix4fv(model_loc, gl.FALSE, model);
-			gl.vertexAttrib3f(vertexColor, 0, 0, 0);
-			gl.drawArrays(gl.LINE_LOOP, 0, hex_verts.length/2/3);
-		}*/
+			// TODO: create fallback
 		}
 		else 
 		{
-			gl.bindBuffer(gl.ARRAY_BUFFER, instance_buffer);
+			// upload data to tex_coords_buffer
+			// attach buffer data to p_tex_coord attribute
+			{
+				gl.bindBuffer(gl.ARRAY_BUFFER, tex_coords_buffer);
 
-			let model_pos_loc = gl.getAttribLocation(shader_program, "model_position");
-			gl.enableVertexAttribArray(model_pos_loc);
-			gl.vertexAttribPointer(model_pos_loc, 3, gl.FLOAT, gl.FALSE, 6 * 4, 0);
-			ext.vertexAttribDivisorANGLE(model_pos_loc, 1);
+				let tex_coords = [0, 0.33, 0.5, 0, 1, 0.33, 1, 0.67, 0.5, 1, 0, 0.67];
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tex_coords), gl.STATIC_DRAW);
 
-			let color_loc = gl.getAttribLocation(shader_program, "color");
+				let tex_coord_loc = gl.getAttribLocation(shader_program, 'p_tex_coord');
+				gl.enableVertexAttribArray(tex_coord_loc);
+				gl.vertexAttribPointer(tex_coord_loc, 2, gl.FLOAT, gl.FALSE, 2 * 4, 0);
+			}
 
 
-			gl.bindBuffer(gl.ARRAY_BUFFER, tex_coords_buffer);
-
-			let tex_coords = [0, 0.33, 0.5, 0, 1, 0.33, 1, 0.67, 0.5, 1, 0, 0.67];
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tex_coords), gl.STATIC_DRAW);
-
-			let tex_coord_loc = gl.getAttribLocation(shader_program, 'p_tex_coord');
-			gl.enableVertexAttribArray(tex_coord_loc);
-			gl.vertexAttribPointer(tex_coord_loc,2,gl.FLOAT,gl.FALSE,2 * 4,0);
-
-			for (let array in instance_arrays_of_hexes)
+			// bind instance_buffer
+			// attach buffer data to model_position attribute
 			{
 				gl.bindBuffer(gl.ARRAY_BUFFER, instance_buffer);
 
+				let model_pos_loc = gl.getAttribLocation(shader_program, 'model_position');
+				gl.enableVertexAttribArray(model_pos_loc);
+				gl.vertexAttribPointer(model_pos_loc, 3, gl.FLOAT, gl.FALSE, 6 * 4, 0);
+				ext.vertexAttribDivisorANGLE(model_pos_loc, 1);
+			}
+
+			for (let array in instance_arrays_of_hexes)
+			{
+				// attach buffer data to color attribute
+				let color_loc = gl.getAttribLocation(shader_program, 'color');
 				gl.enableVertexAttribArray(color_loc);
 				gl.vertexAttribPointer(color_loc, 3, gl.FLOAT, gl.FALSE, 6 * 4, 3 * 4);
 				ext.vertexAttribDivisorANGLE(color_loc, 1);
 
+				// upload data to instance_buffer
+				gl.bufferData(gl.ARRAY_BUFFER, instance_arrays_of_hexes[array], gl.STATIC_DRAW);
+
+				// use texture on tiles that have one and don't use them in tiles that haven't
 				if (hex_types[array][3] !== null)
 				{
 					gl.activeTexture(gl.TEXTURE0);
@@ -131,16 +123,10 @@ function update_and_render(time)
 					gl.uniform1i(tex_enable_loc, 0);
 				}
 
-				gl.bindBuffer(gl.ARRAY_BUFFER, instance_buffer);
-
-				// upload data
-				gl.bufferData(gl.ARRAY_BUFFER, instance_arrays_of_hexes[array], gl.STATIC_DRAW);
-
 				// draw tiles
 				ext.drawElementsInstancedANGLE(gl.TRIANGLES, hex_indices.length, gl.UNSIGNED_SHORT, 0, instance_arrays_of_hexes[array].length/6);
 
-				// draw outline
-				// TODO: only draw outline when grid_mode is active
+				// draw grid if grid_mode is enabled
 				if (grid_mode)
 				{
 					let model = mat4.create();
@@ -167,7 +153,7 @@ function main()
 	gl = initGL();
 	ext = gl.getExtension('ANGLE_instanced_arrays');
 	shader_program = initShaders(gl);
-	hexes = []
+	hexes = [];
 
 	// choose elevation position
 	//let num_elevations = 1 + Math.floor(Math.random() * max_elevations);
@@ -181,7 +167,6 @@ function main()
 		elevations[i].push(Math.floor(rows / 2));
 	}
 
-	let start_x = 0;
 	let width = Math.sqrt(3)/2 * radius;
 	for (let j = 0; j < columns; j++) {
 		for (let i = 0; i < rows; i++) {
@@ -274,9 +259,7 @@ function main()
 	instance_buffer = gl.createBuffer();
 	tex_coords_buffer = gl.createBuffer()
 
-	camera = create_camera(-6, -2.5, -2.8);
-
-
+	camera = {'x': -6, 'y': -2.5, 'z': -2.8, 'speed': 0.004};
 
 	// TEST
 	// TODO: wait for image to be loaded before starting to render scene
