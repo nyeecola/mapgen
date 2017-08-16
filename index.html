@@ -40,6 +40,8 @@
   uniform mat4 model;
   uniform mat4 view;
   uniform mat4 projection;
+  // TEST
+  uniform float tex_coord_y_offset;
   
   varying vec3 output_color;
   varying vec2 tex_coord;
@@ -49,7 +51,7 @@
     vec3 final_position = position + model_position;
     gl_Position = projection * view * model * vec4(final_position.xyz, 1.0);
     output_color = color;
-    tex_coord = p_tex_coord;
+    tex_coord = vec2(p_tex_coord.x + tex_coord_y_offset, p_tex_coord.y + tex_coord_y_offset);
   }
 </script>
 

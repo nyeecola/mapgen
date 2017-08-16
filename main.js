@@ -1,3 +1,5 @@
+let offset_y_tex = 0;
+
 function update_and_render(time)
 {
 	// update
@@ -96,8 +98,19 @@ function update_and_render(time)
 				ext.vertexAttribDivisorANGLE(model_pos_loc, 1);
 			}
 
+			offset_y_tex += 0.00007 * dt;
+			if (offset_y_tex > 2) offset_y_tex = 0;
 			for (let array in instance_arrays_of_hexes)
 			{
+				if (array === 'ocean' || array === 'sea')
+				{
+					gl.uniform1f(gl.getUniformLocation(shader_program, 'tex_coord_y_offset'), offset_y_tex);
+				}
+				else
+				{
+					gl.uniform1f(gl.getUniformLocation(shader_program, 'tex_coord_y_offset'), 0);
+				}
+
 				// attach buffer data to color attribute
 				let color_loc = gl.getAttribLocation(shader_program, 'color');
 				gl.enableVertexAttribArray(color_loc);
@@ -323,22 +336,32 @@ function main()
 	hex_types['forest'][3] = gl.createTexture();
 	let image = new Image();
 	image.crossOrigin = 'anonymous';
-	image.onload = function() { handle_texture_loaded(image, hex_types['forest'][3]); }.bind(image, hex_types['forest'][3]);
+	image.onload = function() { handle_texture_loaded(image, hex_types['forest'][3]); }.bind(image);
 	image.src = 'http://i.imgur.com/n7ezMnp.png';
 
 	hex_types['grassland'][3] = gl.createTexture();
 	let image2 = new Image();
 	image2.crossOrigin = 'anonymous';
-	image2.onload = function() { handle_texture_loaded(image2, hex_types['grassland'][3]); }.bind(image2, hex_types['grassland'][3]);
+	image2.onload = function() { handle_texture_loaded(image2, hex_types['grassland'][3]); }.bind(image2);
 	image2.src = 'http://i.imgur.com/RVZxP2K.png';
 
 	hex_types['desert'][3] = gl.createTexture();
 	let image3 = new Image();
 	image3.crossOrigin = 'anonymous';
-	image3.onload = function() { handle_texture_loaded(image3, hex_types['desert'][3]); }.bind(image3, hex_types['desert'][3]);
+	image3.onload = function() { handle_texture_loaded(image3, hex_types['desert'][3]); }.bind(image3);
 	image3.src = 'http://i.imgur.com/1mbEioa.png';
 
+	hex_types['ocean'][3] = gl.createTexture();
+	let image4 = new Image();
+	image4.crossOrigin = 'anonymous';
+	image4.onload = function() { handle_texture_loaded(image4, hex_types['ocean'][3]); }.bind(image4);
+	image4.src = 'http://i.imgur.com/jJ6cqtj.png';
 	
+	hex_types['sea'][3] = gl.createTexture();
+	let image5 = new Image();
+	image5.crossOrigin = 'anonymous';
+	image5.onload = function() { handle_texture_loaded(image5, hex_types['sea'][3]); }.bind(image5);
+	image5.src = 'http://i.imgur.com/jWjT3AH.png';
 
 	instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
 
@@ -349,8 +372,8 @@ function handle_texture_loaded(image, texture)
 {
 	gl.bindTexture(gl.TEXTURE_2D, texture);
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 	gl.generateMipmap(gl.TEXTURE_2D);

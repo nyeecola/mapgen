@@ -3,9 +3,9 @@
 // Features:
 // add mesh support
 // add font/text support
-// add fallback to computers without instancing available
+// add fallback to computers without instancing extension available
 // add wrap-around left/right (efficiently)
-// improve map gen algorithm
+// create more map gen algorithms
 // create loading screen
 // add lightning/shadowing
 // add tile animation
@@ -14,7 +14,7 @@
 // lerp between tiles
 //
 // Maintenance:
-// refactor rendering code
+// rework texture loading code
 // start using VAOs
 // start using static analysis since JS is bad
 // maybe rename some usage of hex to tile?
