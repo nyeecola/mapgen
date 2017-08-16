@@ -78,7 +78,8 @@ function update_and_render(time)
 			{
 				gl.bindBuffer(gl.ARRAY_BUFFER, tex_coords_buffer);
 
-				let tex_coords = [0, 0.33, 0.5, 0, 1, 0.33, 1, 0.67, 0.5, 1, 0, 0.67];
+				//let tex_coords = [1, 0.33, 0.5, 0, 0, 0.33, 0, 0.67, 0.5, 1, 1, 0.67];
+				let tex_coords = [1, 0, 0.5, -0.5, 0, 0, 0, 1, 0.5, 1.5, 1, 1];
 				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tex_coords), gl.STATIC_DRAW);
 
 				let tex_coord_loc = gl.getAttribLocation(shader_program, 'p_tex_coord');
@@ -98,7 +99,7 @@ function update_and_render(time)
 				ext.vertexAttribDivisorANGLE(model_pos_loc, 1);
 			}
 
-			offset_y_tex += 0.00007 * dt;
+			offset_y_tex += 0.0001 * dt;
 			if (offset_y_tex > 2) offset_y_tex = 0;
 			for (let array in instance_arrays_of_hexes)
 			{
@@ -355,7 +356,7 @@ function main()
 	let image4 = new Image();
 	image4.crossOrigin = 'anonymous';
 	image4.onload = function() { handle_texture_loaded(image4, hex_types['ocean'][3]); }.bind(image4);
-	image4.src = 'http://i.imgur.com/jJ6cqtj.png';
+	image4.src = 'http://i.imgur.com/3TVWpk4.png';
 	
 	hex_types['sea'][3] = gl.createTexture();
 	let image5 = new Image();
