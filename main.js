@@ -160,6 +160,14 @@ function main()
 	let num_elevations = 2;
 	let elevations = [];
 
+	// TODO: maybe there should be more than one
+	let moisture_point = [
+		20 + Math.floor(Math.random() * (columns - 20 * 2)),
+		30 + Math.floor(Math.random() * (rows - 30 * 2)),
+	];
+
+	let mountain_level = 0.07 + Math.floor(Math.random() * 0.04);
+
 	for (let i = 0; i < num_elevations; i++)
 	{
 		elevations.push([]);
@@ -172,85 +180,133 @@ function main()
 		for (let i = 0; i < rows; i++) {
 			let hex = create_hex(i * width + j * width * 2, i * 3/4 * 2 * radius, j, i);
 
-			let dist = columns + rows;
+			// elevation
+			let dist = columns * 1.2 + rows;
 			hex.elevation = dist * num_elevations;
 			for (let k = 0; k < num_elevations; k++)
 			{
-				let cur_dist = hex_distance_points(j, i, elevations[k][0], elevations[k][1]);
+				let cur_dist = 1.2 * hex_distance_points(j, i, elevations[k][0], elevations[k][1]);
 				dist = Math.min(dist, cur_dist);
 				hex.elevation -= cur_dist;
 			}
 
-			//hex.elevation = columns + rows - dist;
-			hex.elevation /= (columns + rows) * num_elevations;
-			hex.elevation -= 8.0/10;
+			hex.elevation /= (columns * 1.2 + rows) * num_elevations;
+			hex.elevation -= 7.8/10;
 
 
 			let random_factor = Math.random() * 0.014;
 			random_factor -= 0.014 / 2;
 			hex.elevation += random_factor;
 
-			hex.elevation += perlin(j / 9.5, i / 9.5) * 0.26;
+			hex.elevation += perlin(j / 7.5, i / 7.5) * 0.30;
 
-			let types = Object.keys(hex_types);
+			// moisture
+			hex.moisture = 0;
+			hex.moisture += perlin(j / 11.4, i / 11.4) * 1;
+			let cur_dist = 1.2 * hex_distance_points(j, i, moisture_point[0], moisture_point[1]);
+			hex.moisture -= cur_dist * 0.0024;
+
+			let candidates = {};
 
 			// top and bottom
-			if (hex.grid_y < 0.1 * rows || hex.grid_y > 0.9 * rows)
+			if (hex.grid_y < 0.04 * rows || hex.grid_y > 0.95 * rows)
 			{
-				hex.elevation -= 0.055;
-				types.splice(types.indexOf('sea'), 1);
-				//types.splice(types.indexOf('grassland'), 1);
-				//types.splice(types.indexOf('desert'), 1);
-				//types.splice(types.indexOf('mountain'), 1);
-				//types.splice(types.indexOf('forest'), 1);
+				candidates['ice'] = 100;
+				candidates['ocean'] = 4;
 			}
 			else
 			{
-				types.splice(types.indexOf('ice'), 1);
-			}
-
-			if (hex.elevation > sea_level)
-			{
-				types.splice(types.indexOf('ocean'), 1);
-				types.splice(types.indexOf('sea'), 1);
-
-				// TEST
-				if (hex.elevation > 0.06)
+				if (hex.elevation > sea_level)
 				{
-					types.splice(types.indexOf('grassland'), 1);
-					types.splice(types.indexOf('desert'), 1);
+					if (hex.elevation > mountain_level) candidates['mountain'] = 100;
+					else candidates['mountain'] = 1;
+
+					if (hex.moisture > -0.14)
+					{
+						candidates['forest'] = 100;
+						candidates['grassland'] = 1;
+						candidates['desert'] = 0;
+					}
+					else if (hex.moisture < -0.24)
+					{
+						if (hex.grid_y < 0.16 * rows || hex.grid_y > 0.84 * rows)
+						{
+							candidates['desert'] = 0;
+							candidates['mountain'] /= 10;
+						}
+						else if (hex.grid_y < 0.16 * rows || hex.grid_y > 0.84 * rows)
+						{
+							candidates['desert'] = 240;
+						}
+						else
+						{
+							candidates['desert'] = 100;
+						}
+
+						candidates['forest'] = 0;
+						candidates['grassland'] = 1;
+					}
+					else
+					{
+						candidates['forest'] = 50 * Math.abs(hex.moisture);
+						candidates['grassland'] = 10000;
+						candidates['desert'] = 50 - 50 * Math.abs(hex.moisture);
+					}
 				}
 				else
 				{
-					types.splice(types.indexOf('mountain'), 1);
-					if (hex.elevation > 0.04)
-					{
-						types.splice(types.indexOf('desert'), 1);
-					}
+					candidates['ocean'] = 100;
 				}
 			}
-			else if (hex.elevation <= sea_level)
-			{
-				types.splice(types.indexOf('forest'), 1);
-				types.splice(types.indexOf('grassland'), 1);
-				types.splice(types.indexOf('desert'), 1);
-				types.splice(types.indexOf('mountain'), 1);
 
-				if (hex.elevation < -0.02)
+			let candidates_total = 0;
+			for (let candidate in candidates)
+			{
+				candidates_total += candidates[candidate];
+			}
+
+			let candidates_ratio = [];
+			let candidates_names = [];
+			let last_ratio = 0;
+			for (let candidate in candidates)
+			{
+				candidates_names.push(candidate);
+				last_ratio += candidates[candidate] / candidates_total;
+				candidates_ratio.push(last_ratio);
+			}
+
+			let random_number = Math.random();
+			let chosen;
+			for (let ci = 0; ci < candidates_ratio.length; ci++)
+			{
+				if (candidates_ratio[ci] > random_number)
 				{
-					// TODO: use this everywhere
-					if (types.indexOf('sea') > -1)
-					{
-						types.splice(types.indexOf('sea'), 1);
-					}
-				}
-				else if (types.indexOf('ocean') > -1 && types.indexOf('ice') > -1)
-				{
-					types.splice(types.indexOf('ocean'), 1);
+					chosen = ci;
+					break;
 				}
 			}
-			hex.type = types[Math.floor(Math.random()*types.length)]
+
+			hex.type = candidates_names[chosen];
 			hexes.push(hex);
+		}
+	}
+
+	// costal sea line
+	for (let j = 1; j < columns - 1; j++) {
+		for (let i = 1; i < rows - 1; i++) {
+			let hex = hexes[j * rows + i];
+			if (hex.type == 'ocean' && (
+			    (hexes[(j-1) * rows + i].type != 'ocean' && hexes[(j-1) * rows + i].type != 'sea') ||
+			    (hexes[(j+1) * rows + i].type != 'ocean' && hexes[(j+1) * rows + i].type != 'sea') ||
+			    (hexes[(j) * rows + (i-1)].type != 'ocean' && hexes[(j) * rows + (i-1)].type != 'sea') ||
+			    (hexes[(j+1) * rows + (i-1)].type != 'ocean' && hexes[(j+1) * rows + (i-1)].type != 'sea') ||
+			    (hexes[(j-1) * rows + (i+1)].type != 'ocean' && hexes[(j-1) * rows + (i+1)].type != 'sea') ||
+			    (hexes[(j) * rows + (i+1)].type != 'ocean' && hexes[(j) * rows + (i+1)].type != 'sea')))
+			{
+				hex.type = 'sea';
+			}
+			//hex.type = candidates_names[chosen];
+			//hexes.push(hex);
 		}
 	}
 

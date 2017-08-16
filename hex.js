@@ -6,7 +6,8 @@ function create_hex(x, y, grid_x, grid_y, elevation)
 		'grid_y': grid_y,
 		'height': radius,
 		'width': Math.sqrt(3)/2 * radius,
-		'type': null, // should call change_tile_type() to change
+		'type': null, // should call change_tile_type() to change after creation
+		'moisture': null, // should not be changed after creation (for now)
 		'elevation': null}; // should not be changed after creation (for now)
 }
 
