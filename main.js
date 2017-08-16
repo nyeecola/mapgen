@@ -362,7 +362,7 @@ function main()
 	let image5 = new Image();
 	image5.crossOrigin = 'anonymous';
 	image5.onload = function() { handle_texture_loaded(image5, hex_types['sea'][3]); }.bind(image5);
-	image5.src = 'http://i.imgur.com/jWjT3AH.png';
+	image5.src = 'http://i.imgur.com/aPPbBbj.png';
 
 	instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
 
