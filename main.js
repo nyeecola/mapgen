@@ -1,10 +1,9 @@
-let offset_y_tex = 0;
-
 function update_and_render(time)
 {
 	// update
 	{
 		dt = time - last_time;
+		console.log(dt);
 		last_time = time;
 		if (dt < 0) dt = 0.0000001;
 
@@ -50,7 +49,6 @@ function update_and_render(time)
 		// upload data to indices buffer
 		let hex_indices = [0, 1, 2, 0, 2, 3, 0, 3, 5, 3, 4, 5];
 		{
-
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices_buffer);
 			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(hex_indices), gl.STATIC_DRAW);
 		}
@@ -78,7 +76,6 @@ function update_and_render(time)
 			{
 				gl.bindBuffer(gl.ARRAY_BUFFER, tex_coords_buffer);
 
-				//let tex_coords = [1, 0.33, 0.5, 0, 0, 0.33, 0, 0.67, 0.5, 1, 1, 0.67];
 				let tex_coords = [1, 0, 0.5, -0.5, 0, 0, 0, 1, 0.5, 1.5, 1, 1];
 				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tex_coords), gl.STATIC_DRAW);
 
@@ -99,17 +96,17 @@ function update_and_render(time)
 				ext.vertexAttribDivisorANGLE(model_pos_loc, 1);
 			}
 
-			offset_y_tex += 0.0001 * dt;
-			if (offset_y_tex > 2) offset_y_tex = 0;
+			offset_tex_animation += 0.0001 * dt;
+			if (offset_tex_animation > 2) offset_tex_animation = 0;
 			for (let array in instance_arrays_of_hexes)
 			{
 				if (array === 'ocean' || array === 'sea')
 				{
-					gl.uniform1f(gl.getUniformLocation(shader_program, 'tex_coord_y_offset'), offset_y_tex);
+					gl.uniform1f(gl.getUniformLocation(shader_program, 'tex_coord_offset'), offset_tex_animation);
 				}
 				else
 				{
-					gl.uniform1f(gl.getUniformLocation(shader_program, 'tex_coord_y_offset'), 0);
+					gl.uniform1f(gl.getUniformLocation(shader_program, 'tex_coord_offset'), 0);
 				}
 
 				// attach buffer data to color attribute
@@ -155,6 +152,38 @@ function update_and_render(time)
 					gl.vertexAttrib3f(color_loc, 0, 0, 0);
 					ext.drawArraysInstancedANGLE(gl.LINE_LOOP, 0, hex_verts.length/3, instance_arrays_of_hexes[array].length/6);
 				}
+			}
+
+			// TEST
+			{
+				// upload data to instance_buffer
+				gl.bufferData(gl.ARRAY_BUFFER, instance_arrays_of_hexes['mountain'], gl.STATIC_DRAW);
+
+				// change model matrix
+				let model = mat4.create();
+				model = mat4.scale(model, model, vec3.fromValues(0.11, 0.11, 0.11));
+				model = mat4.translate(model, model, vec3.fromValues(0.0, 0.0, 0.4));
+				let model_loc = gl.getUniformLocation(shader_program, "model");
+				gl.uniformMatrix4fv(model_loc, gl.FALSE, model);
+
+				// disable p_tex_coord, tex_coord_offset and texture_enabled
+				let tex_coord_loc = gl.getAttribLocation(shader_program, 'p_tex_coord');
+				gl.disableVertexAttribArray(tex_coord_loc);
+				gl.uniform1f(gl.getUniformLocation(shader_program, 'tex_coord_offset'), 0);
+				gl.uniform1i(gl.getUniformLocation(shader_program, 'texture_enabled'), 0);
+
+				// set color to all red
+				let color_loc = gl.getAttribLocation(shader_program, 'color');
+				gl.disableVertexAttribArray(color_loc);
+				gl.vertexAttrib3f(color_loc, 1, 0, 0);
+
+				gl.bindBuffer(gl.ARRAY_BUFFER, array_buffer);
+				gl.bufferData(gl.ARRAY_BUFFER, monkey_object.vertices, gl.STATIC_DRAW);
+				let attrib_loc = gl.getAttribLocation(shader_program, 'position');
+				gl.enableVertexAttribArray(attrib_loc);
+				gl.vertexAttribPointer(attrib_loc, 3, gl.FLOAT, gl.FALSE, 6 * 4, 0);
+
+				ext.drawArraysInstancedANGLE(gl.TRIANGLES, 0, monkey_object.vertexCount, instance_arrays_of_hexes['mountain'].length/6);
 			}
 		}
 	}
@@ -365,6 +394,9 @@ function main()
 	image5.src = 'http://i.imgur.com/aPPbBbj.png';
 
 	instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
+
+	// TEST
+	monkey_object = load_mesh_data(global_mesh_data);
 
 	requestAnimationFrame(update_and_render);
 }

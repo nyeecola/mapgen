@@ -40,9 +40,9 @@ var array_buffer;
 var indices_buffer;
 var instance_buffer;
 var tex_coords_buffer;
-var instance_arrays_of_hexes;
 
 // engine state
+var instance_arrays_of_hexes;
 var last_time = 0;
 var key_state = [];
 var hexes;
@@ -50,6 +50,8 @@ var camera;
 var sea_level = 0;
 var max_elevations = 3;
 var grid_mode = false;
+var offset_tex_animation = 0;
+var monkey_object;
 
 // NOTE: in progress
 var hex_types = {

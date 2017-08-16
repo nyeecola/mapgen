@@ -12,6 +12,8 @@ function initGL() {
 	gl.clearColor(0,0,0.6,1);
 
 	gl.enable(gl.DEPTH_TEST);
+	gl.enable(gl.CULL_FACE);
+	gl.cullFace(gl.BACK);
 
 	gl.enable(gl.SAMPLE_COVERAGE);
 	gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
