@@ -1,12 +1,12 @@
+let mountain_model_texture;
+
 function update_and_render(time)
 {
 	// update
 	{
 		dt = time - last_time;
-		console.log(dt);
 		last_time = time;
 		if (dt < 0) dt = 0.0000001;
-
 
 		if ('ArrowRight' in key_state && key_state['ArrowRight'])
 			camera.x -= dt * camera.speed;
@@ -161,16 +161,10 @@ function update_and_render(time)
 
 				// change model matrix
 				let model = mat4.create();
-				model = mat4.scale(model, model, vec3.fromValues(0.11, 0.11, 0.11));
+				model = mat4.scale(model, model, vec3.fromValues(0.08, 0.08, 0.08));
 				model = mat4.translate(model, model, vec3.fromValues(0.0, 0.0, 0.4));
 				let model_loc = gl.getUniformLocation(shader_program, "model");
 				gl.uniformMatrix4fv(model_loc, gl.FALSE, model);
-
-				// disable p_tex_coord, tex_coord_offset and texture_enabled
-				let tex_coord_loc = gl.getAttribLocation(shader_program, 'p_tex_coord');
-				gl.disableVertexAttribArray(tex_coord_loc);
-				gl.uniform1f(gl.getUniformLocation(shader_program, 'tex_coord_offset'), 0);
-				gl.uniform1i(gl.getUniformLocation(shader_program, 'texture_enabled'), 0);
 
 				// set color to all red
 				let color_loc = gl.getAttribLocation(shader_program, 'color');
@@ -178,12 +172,36 @@ function update_and_render(time)
 				gl.vertexAttrib3f(color_loc, 1, 0, 0);
 
 				gl.bindBuffer(gl.ARRAY_BUFFER, array_buffer);
-				gl.bufferData(gl.ARRAY_BUFFER, monkey_object.vertices, gl.STATIC_DRAW);
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(global_mesh_data.vertices), gl.STATIC_DRAW);
 				let attrib_loc = gl.getAttribLocation(shader_program, 'position');
 				gl.enableVertexAttribArray(attrib_loc);
-				gl.vertexAttribPointer(attrib_loc, 3, gl.FLOAT, gl.FALSE, 6 * 4, 0);
+				gl.vertexAttribPointer(attrib_loc, 3, gl.FLOAT, gl.FALSE, 3 * 4, 0);
 
-				ext.drawArraysInstancedANGLE(gl.TRIANGLES, 0, monkey_object.vertexCount, instance_arrays_of_hexes['mountain'].length/6);
+
+
+				let mesh_indices = [].concat.apply([], global_mesh_data.faces);
+				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices_buffer);
+				gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(mesh_indices), gl.STATIC_DRAW);
+
+				// disable tex_coord_offset and enable texture
+				gl.uniform1f(gl.getUniformLocation(shader_program, 'tex_coord_offset'), 0);
+				gl.uniform1i(gl.getUniformLocation(shader_program, 'texture_enabled'), 1);
+
+				// upload texture coords
+				gl.bindBuffer(gl.ARRAY_BUFFER, tex_coords_buffer);
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(global_mesh_data.texturecoords[0]), gl.STATIC_DRAW);
+
+				// attach texture coords to texture coords buffer
+				let tex_coord_loc = gl.getAttribLocation(shader_program, 'p_tex_coord');
+				gl.enableVertexAttribArray(tex_coord_loc);
+				gl.vertexAttribPointer(tex_coord_loc, 2, gl.FLOAT, gl.FALSE, 2 * 4, 0);
+
+				// activate texture
+				gl.activeTexture(gl.TEXTURE0);
+				gl.bindTexture(gl.TEXTURE_2D, mountain_model_texture);
+				gl.uniform1i(gl.getUniformLocation(shader_program, 'texture_sampler'), 0);
+
+				ext.drawElementsInstancedANGLE(gl.TRIANGLES, mesh_indices.length, gl.UNSIGNED_SHORT, 0, instance_arrays_of_hexes['mountain'].length/6);
 			}
 		}
 	}
@@ -393,17 +411,24 @@ function main()
 	image5.onload = function() { handle_texture_loaded(image5, hex_types['sea'][3]); }.bind(image5);
 	image5.src = 'http://i.imgur.com/aPPbBbj.png';
 
+	mountain_model_texture = gl.createTexture();
+	let image6 = new Image();
+	image6.crossOrigin = 'anonymous';
+	image6.onload = function() { handle_texture_loaded(image6, mountain_model_texture, true); }.bind(image6);
+	image6.src = 'http://i.imgur.com/TcDOJK5.png';
+
 	instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
 
 	// TEST
-	monkey_object = load_mesh_data(global_mesh_data);
+	global_mesh_data = global_mesh_data.meshes[0];
 
 	requestAnimationFrame(update_and_render);
 }
 
-function handle_texture_loaded(image, texture)
+function handle_texture_loaded(image, texture, flip)
 {
 	gl.bindTexture(gl.TEXTURE_2D, texture);
+	if (flip) gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flip);
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);

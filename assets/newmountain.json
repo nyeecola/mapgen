@@ -1,4 +1,4 @@
-global_mesh_data = {
+{
 	 "rootnode": {
 		 "name": "newmountain.obj"
 		,"transformation": [
@@ -5087,4 +5087,4 @@ global_mesh_data = {
 			]
 		}
 	]
-};
+}
