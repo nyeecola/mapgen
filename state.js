@@ -1,13 +1,17 @@
 // TODO
 //
 // Features:
-// add texture support
 // add mesh support
 // add font/text support
 // add fallback to computers without instancing available
-// add wrap around left/right
+// add wrap-around left/right (efficiently)
 // improve map gen algorithm
 // create loading screen
+// add lightning/shadowing
+// add tile animation
+// add fog of war
+// add mouse-controlled camera movement (plus zoom)
+// lerp between tiles
 //
 // Maintenance:
 // refactor rendering code
@@ -15,6 +19,7 @@
 // start using static analysis since JS is bad
 // maybe rename some usage of hex to tile?
 // maybe refactor classes
+// rework mouse click handler function
 //
 // Performance:
 // improve ray to hexagon intersection test
@@ -44,16 +49,17 @@ var hexes;
 var camera;
 var sea_level = 0;
 var max_elevations = 3;
+var grid_mode = false;
 
 // NOTE: in progress
 var hex_types = {
-	'grassland': [0.3, 0.9, 0.3],
-	'forest': [0.0, 0.7, 0.0],
-	'desert': [1, 1, 0.6],
-	'sea': [0.3, 0.62, 1.0],
-	'ocean': [0.2, 0.4, 1],
-	'mountain': [0.7, 0.7, 0.7],
-	'ice': [0.5, 0.9, 1]
+	'grassland': [0.3, 0.9, 0.3, null],
+	'forest': [0.0, 0.7, 0.0, null],
+	'desert': [1, 1, 0.6, null],
+	'sea': [0.3, 0.62, 1.0, null],
+	'ocean': [0.2, 0.4, 1, null],
+	'mountain': [0.7, 0.7, 0.7, null],
+	'ice': [0.5, 0.9, 1, null]
 };
 
 function create_camera(x, y, z)
@@ -64,8 +70,14 @@ function create_camera(x, y, z)
 		'speed': 0.004};
 }
 
-window.onkeyup = function(e) {key_state[e.key]=false;}
-window.onkeydown = function(e) {key_state[e.key]=true;}
+window.onkeyup = function(e) {
+	key_state[e.key]=false;
+}
+window.onkeydown = function(e) {
+	key_state[e.key]=true;
+
+	if (e.key == 'g') grid_mode = !grid_mode;
+}
 
 // TODO: handle this inside update? (since I'm using matrixes)
 document.addEventListener("click", function(){
