@@ -55,10 +55,26 @@ function get_hex_at(x, y)
 // NOTE: dirty hack for now, we probably won't even need to change colors later, so leave it as is for a while
 function change_hex_type(hex, type)
 {
+	/*
 	hex.type = type;
-	instance_array_of_hexes[(hex.grid_x * rows + hex.grid_y) * 6 + 3] = hex_types[hex.type][0];
-	instance_array_of_hexes[(hex.grid_x * rows + hex.grid_y) * 6 + 4] = hex_types[hex.type][1];
-	instance_array_of_hexes[(hex.grid_x * rows + hex.grid_y) * 6 + 5] = hex_types[hex.type][2];
+	instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
+	*/
+
+	let array = instance_arrays_of_hexes[hex.type];
+	let i = 0;
+	for (; i < array.length - 1; i++)
+	{
+		// hack to check if it is the same hex, we probably shouldn't be search linearly anyway
+		if (Math.abs(hex.x - array[i]) <= 0.000001 && Math.abs(hex.y - array[i+1]) <= 0.000001)
+		{
+			break;
+		}
+	}
+	let temp_array = Array.from(array);
+	let removed = temp_array.splice(i, 6);
+	instance_arrays_of_hexes[hex.type] = new Float32Array(temp_array);
+	instance_arrays_of_hexes[type] = new Float32Array(Array.from(instance_arrays_of_hexes[type]).concat(removed));
+	hex.type = type;
 }
 
 function hex_distance(a, b)

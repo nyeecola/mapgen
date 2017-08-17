@@ -1,25 +1,23 @@
 // TODO
 //
 // Features:
-// add mesh support
 // add font/text support
-// add fallback to computers without instancing extension available
+// create loading screen
+// add fog of war
+// add lightning/shadowing
+// add mouse-controlled camera movement (plus zoom)
 // add wrap-around left/right (efficiently)
 // create more map gen algorithms
-// create loading screen
-// add lightning/shadowing
-// add tile animation
-// add fog of war
-// add mouse-controlled camera movement (plus zoom)
+// add multiple-sprite tile animation
+// add fallback to GPUs without ANGLE_instace_arrays
 // lerp between tiles
 //
 // Maintenance:
-// rework texture loading code
-// start using VAOs
 // start using static analysis since JS is bad
 // maybe rename some usage of hex to tile?
 // maybe refactor classes
 // rework mouse click handler function
+// start using VAOs
 //
 // Performance:
 // improve ray to hexagon intersection test
@@ -42,10 +40,15 @@ var instance_buffer;
 var tex_coords_buffer;
 
 // engine state
+
+// TODO: create an object to hold textures/meshes
+var mountain_model_texture;
+var global_mesh_data
+
+var hexes;
 var instance_arrays_of_hexes;
 var last_time = 0;
 var key_state = [];
-var hexes;
 var camera;
 var sea_level = 0;
 var max_elevations = 3;
@@ -139,6 +142,7 @@ document.addEventListener("click", function(){
 				types.splice(types.indexOf(hex.type), 1);
 				var type = types[Math.floor(Math.random()*types.length)]
 				change_hex_type(hex, type);
+				break;
 			}
 		}
 	}

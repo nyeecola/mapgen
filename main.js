@@ -1,5 +1,3 @@
-let mountain_model_texture;
-
 function update_and_render(time)
 {
 	// update
@@ -154,7 +152,7 @@ function update_and_render(time)
 				}
 			}
 
-			// TEST
+			// draw meshes (currently only mountain)
 			{
 				// upload data to instance_buffer
 				gl.bufferData(gl.ARRAY_BUFFER, instance_arrays_of_hexes['mountain'], gl.STATIC_DRAW);
@@ -353,6 +351,7 @@ function main()
 	}
 
 	// costal sea line
+	// TODO: add costal sea line to bounding rows/columns (4 edges of the map)
 	for (let j = 1; j < columns - 1; j++) {
 		for (let i = 1; i < rows - 1; i++) {
 			let hex = hexes[j * rows + i];
@@ -366,8 +365,6 @@ function main()
 			{
 				hex.type = 'sea';
 			}
-			//hex.type = candidates_names[chosen];
-			//hexes.push(hex);
 		}
 	}
 
@@ -378,44 +375,36 @@ function main()
 
 	camera = {'x': -6, 'y': -2.5, 'z': -2.8, 'speed': 0.004};
 
-	// TEST
-	// TODO: wait for image to be loaded before starting to render scene
-	// TODO: refactor this mess
-	hex_types['forest'][3] = gl.createTexture();
-	let image = new Image();
-	image.crossOrigin = 'anonymous';
-	image.onload = function() { handle_texture_loaded(image, hex_types['forest'][3]); }.bind(image);
-	image.src = 'http://i.imgur.com/n7ezMnp.png';
+	// TODO: wait for image to be loaded before starting to render scene (loading screen)
+	load_image('http://i.imgur.com/n7ezMnp.png', function (image) {
+		hex_types['forest'][3] = gl.createTexture();
+		handle_texture_loaded(image, hex_types['forest'][3], false);
+	});
 
-	hex_types['grassland'][3] = gl.createTexture();
-	let image2 = new Image();
-	image2.crossOrigin = 'anonymous';
-	image2.onload = function() { handle_texture_loaded(image2, hex_types['grassland'][3]); }.bind(image2);
-	image2.src = 'http://i.imgur.com/RVZxP2K.png';
+	load_image('http://i.imgur.com/RVZxP2K.png', function (image) {
+		hex_types['grassland'][3] = gl.createTexture();
+		handle_texture_loaded(image, hex_types['grassland'][3], false);
+	});
 
-	hex_types['desert'][3] = gl.createTexture();
-	let image3 = new Image();
-	image3.crossOrigin = 'anonymous';
-	image3.onload = function() { handle_texture_loaded(image3, hex_types['desert'][3]); }.bind(image3);
-	image3.src = 'http://i.imgur.com/1mbEioa.png';
+	load_image('http://i.imgur.com/1mbEioa.png', function (image) {
+		hex_types['desert'][3] = gl.createTexture();
+		handle_texture_loaded(image, hex_types['desert'][3], false);
+	});
 
-	hex_types['ocean'][3] = gl.createTexture();
-	let image4 = new Image();
-	image4.crossOrigin = 'anonymous';
-	image4.onload = function() { handle_texture_loaded(image4, hex_types['ocean'][3]); }.bind(image4);
-	image4.src = 'http://i.imgur.com/3TVWpk4.png';
-	
-	hex_types['sea'][3] = gl.createTexture();
-	let image5 = new Image();
-	image5.crossOrigin = 'anonymous';
-	image5.onload = function() { handle_texture_loaded(image5, hex_types['sea'][3]); }.bind(image5);
-	image5.src = 'http://i.imgur.com/aPPbBbj.png';
+	load_image('http://i.imgur.com/3TVWpk4.png', function (image) {
+		hex_types['ocean'][3] = gl.createTexture();
+		handle_texture_loaded(image, hex_types['ocean'][3], false);
+	});
 
-	mountain_model_texture = gl.createTexture();
-	let image6 = new Image();
-	image6.crossOrigin = 'anonymous';
-	image6.onload = function() { handle_texture_loaded(image6, mountain_model_texture, true); }.bind(image6);
-	image6.src = 'http://i.imgur.com/TcDOJK5.png';
+	load_image('http://i.imgur.com/aPPbBbj.png', function (image) {
+		hex_types['sea'][3] = gl.createTexture();
+		handle_texture_loaded(image, hex_types['sea'][3], false);
+	});
+
+	load_image('http://i.imgur.com/TcDOJK5.png', function (image) {
+		mountain_model_texture = gl.createTexture();
+		handle_texture_loaded(image, mountain_model_texture, true);
+	});
 
 	instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
 
@@ -423,6 +412,14 @@ function main()
 	global_mesh_data = global_mesh_data.meshes[0];
 
 	requestAnimationFrame(update_and_render);
+}
+
+function load_image(image_url, callback)
+{
+	let image = new Image();
+	image.crossOrigin = 'anonymous';
+	image.onload = callback.bind(this, image);
+	image.src = image_url;
 }
 
 function handle_texture_loaded(image, texture, flip)
