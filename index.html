@@ -9,6 +9,7 @@
   
   varying vec3 output_color;
   varying vec2 tex_coord;
+  varying float frag_fog_flag;
 
   uniform sampler2D texture_sampler;
   uniform int texture_enabled;
@@ -25,7 +26,14 @@
       temp_frag_color = texture2D(texture_sampler, tex_coord);
     }
 
-    gl_FragColor = temp_frag_color;
+    if (frag_fog_flag > 0.5)
+    {
+      gl_FragColor = vec4(temp_frag_color.xyz * 0.2, 1);
+    }
+    else
+    {
+      gl_FragColor = temp_frag_color;
+    }
   }
 </script>
 
@@ -36,6 +44,7 @@
   attribute vec2 p_tex_coord;
   attribute vec3 color;
   attribute vec3 model_position;
+  attribute float fog_flag;
   
   uniform mat4 model;
   uniform mat4 view;
@@ -45,6 +54,7 @@
   
   varying vec3 output_color;
   varying vec2 tex_coord;
+  varying float frag_fog_flag;
 
   void main(void)
   {
@@ -52,6 +62,7 @@
     gl_Position = projection * view * vec4(final_position.xyz, 1.0);
     output_color = color;
     tex_coord = vec2(p_tex_coord.x - tex_coord_offset, p_tex_coord.y + tex_coord_offset);
+    frag_fog_flag = fog_flag;
   }
 </script>
 

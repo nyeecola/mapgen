@@ -37,7 +37,7 @@ function create_hexes_instance_arrays(hexes)
 		{
 			hexes_instance_arrays[hex.type] = [];
 		}
-		hexes_instance_arrays[hex.type] = hexes_instance_arrays[hex.type].concat([hex.x, hex.y, 0, hex_types[hex.type][0], hex_types[hex.type][1], hex_types[hex.type][2]]);
+		hexes_instance_arrays[hex.type] = hexes_instance_arrays[hex.type].concat([hex.x, hex.y, 0, hex_types[hex.type][0], hex_types[hex.type][1], hex_types[hex.type][2], 1]);
 	}
 
 	for (let array in hexes_instance_arrays)

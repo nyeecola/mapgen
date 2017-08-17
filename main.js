@@ -90,8 +90,13 @@ function update_and_render(time)
 
 				let model_pos_loc = gl.getAttribLocation(shader_program, 'model_position');
 				gl.enableVertexAttribArray(model_pos_loc);
-				gl.vertexAttribPointer(model_pos_loc, 3, gl.FLOAT, gl.FALSE, 6 * 4, 0);
+				gl.vertexAttribPointer(model_pos_loc, 3, gl.FLOAT, gl.FALSE, 7 * 4, 0);
 				ext.vertexAttribDivisorANGLE(model_pos_loc, 1);
+
+				let fog_pos_loc = gl.getAttribLocation(shader_program, 'fog_flag');
+				gl.enableVertexAttribArray(fog_pos_loc);
+				gl.vertexAttribPointer(fog_pos_loc, 1, gl.FLOAT, gl.FALSE, 7 * 4, 6 * 4);
+				ext.vertexAttribDivisorANGLE(fog_pos_loc, 1);
 			}
 
 			offset_tex_animation += 0.0001 * dt;
@@ -110,7 +115,7 @@ function update_and_render(time)
 				// attach buffer data to color attribute
 				let color_loc = gl.getAttribLocation(shader_program, 'color');
 				gl.enableVertexAttribArray(color_loc);
-				gl.vertexAttribPointer(color_loc, 3, gl.FLOAT, gl.FALSE, 6 * 4, 3 * 4);
+				gl.vertexAttribPointer(color_loc, 3, gl.FLOAT, gl.FALSE, 7 * 4, 3 * 4);
 				ext.vertexAttribDivisorANGLE(color_loc, 1);
 
 				// upload data to instance_buffer
@@ -133,7 +138,7 @@ function update_and_render(time)
 				}
 
 				// draw tiles
-				ext.drawElementsInstancedANGLE(gl.TRIANGLES, hex_indices.length, gl.UNSIGNED_SHORT, 0, instance_arrays_of_hexes[array].length/6);
+				ext.drawElementsInstancedANGLE(gl.TRIANGLES, hex_indices.length, gl.UNSIGNED_SHORT, 0, instance_arrays_of_hexes[array].length/7);
 
 				// draw grid if grid_mode is enabled
 				if (grid_mode)
@@ -148,7 +153,7 @@ function update_and_render(time)
 
 					gl.disableVertexAttribArray(color_loc);
 					gl.vertexAttrib3f(color_loc, 0, 0, 0);
-					ext.drawArraysInstancedANGLE(gl.LINE_LOOP, 0, hex_verts.length/3, instance_arrays_of_hexes[array].length/6);
+					ext.drawArraysInstancedANGLE(gl.LINE_LOOP, 0, hex_verts.length/3, instance_arrays_of_hexes[array].length/7);
 				}
 			}
 
@@ -199,7 +204,7 @@ function update_and_render(time)
 				gl.bindTexture(gl.TEXTURE_2D, mountain_model_texture);
 				gl.uniform1i(gl.getUniformLocation(shader_program, 'texture_sampler'), 0);
 
-				ext.drawElementsInstancedANGLE(gl.TRIANGLES, mesh_indices.length, gl.UNSIGNED_SHORT, 0, instance_arrays_of_hexes['mountain'].length/6);
+				ext.drawElementsInstancedANGLE(gl.TRIANGLES, mesh_indices.length, gl.UNSIGNED_SHORT, 0, instance_arrays_of_hexes['mountain'].length/7);
 			}
 		}
 	}

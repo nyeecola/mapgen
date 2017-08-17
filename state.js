@@ -16,11 +16,11 @@
 // start using static analysis since JS is bad
 // maybe rename some usage of hex to tile?
 // maybe refactor classes
-// rework mouse click handler function
 // start using VAOs
 //
 // Performance:
 // improve ray to hexagon intersection test
+// improve change_hex_type performance
 
 // constants
 var radius = 0.1;
@@ -43,7 +43,7 @@ var tex_coords_buffer;
 
 // TODO: create an object to hold textures/meshes
 var mountain_model_texture;
-var global_mesh_data
+var global_mesh_data;
 
 var hexes;
 var instance_arrays_of_hexes;
@@ -55,6 +55,7 @@ var max_elevations = 3;
 var grid_mode = false;
 var offset_tex_animation = 0;
 var monkey_object;
+var selected_tile;
 
 // NOTE: in progress
 var hex_types = {
@@ -85,7 +86,7 @@ window.onkeydown = function(e) {
 }
 
 // TODO: handle this inside update? (since I'm using matrixes)
-document.addEventListener("click", function(){
+document.addEventListener("click", function(e){
 	var rect = canvas.getBoundingClientRect();
 	var mouse_x = event.clientX - rect.left;
 	var mouse_y = event.clientY - rect.top;
@@ -129,6 +130,7 @@ document.addEventListener("click", function(){
 	var t = - (vec3.dot(camera_origin, normal) + 0) / divisor;
 
 	// otherwise intersected behind the view
+    let clicked_tile;
 	if (t >= 0) 
 	{
 		var click_loc = vec3.add(camera_origin, camera_origin, vec3.scale(ray_world, ray_world, t));
@@ -138,13 +140,41 @@ document.addEventListener("click", function(){
 			var hex = hexes[i];
 			if (Math.pow((hex.x - click_loc[0]), 2) + Math.pow((hex.y - click_loc[1]), 2) < Math.pow(radius, 2))
 			{
+                clicked_tile = hex;
 				var types = Object.keys(hex_types);
 				types.splice(types.indexOf(hex.type), 1);
 				var type = types[Math.floor(Math.random()*types.length)]
-				change_hex_type(hex, type);
+				//change_hex_type(hex, type);
 				break;
 			}
 		}
 	}
+
+
+    // TODO: 
+    if (e.which == 2 && clicked_tile)
+    {
+        // TODO: think about it, what about multiple tiles? (also, currently not being used)
+        selected_tile = clicked_tile;
+
+        let array = instance_arrays_of_hexes[hex.type];
+        let i = array.length;
+        for (; i > 0; i--)
+        {
+            // hack to check if it is the same hex, we probably shouldn't be search linearly anyway
+            if (Math.abs(hex.x - array[i]) <= 0.000001 && Math.abs(hex.y - array[i+1]) <= 0.000001)
+            {
+                if (array[i+6] < 0.5)
+                {
+                    array[i+6] = 1;
+                }
+                else
+                {
+                    array[i+6] = 0;
+                }
+                break;
+            }
+        }
+    }
 });
 
