@@ -111,6 +111,7 @@ document.addEventListener("mouseup", function(e){
 
 	// TODO: stop rewriting this
 	var view = mat4.create();
+	view = mat4.scale(view, view, vec3.fromValues(1.0 * zoom, 1.0 * zoom, 1.0));
 	view = mat4.rotate(view, view, glMatrix.toRadian(-50), vec3.fromValues(1.0, 0.0, 0.0));
 	view = mat4.translate(view, view, vec3.fromValues(camera.x, camera.y, camera.z));
 	view = mat4.invert(view, view);
