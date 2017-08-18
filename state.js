@@ -20,7 +20,6 @@
 //
 // Performance:
 // improve ray to hexagon intersection test
-// improve change_hex_type performance
 
 // constants
 var radius = 0.1;
