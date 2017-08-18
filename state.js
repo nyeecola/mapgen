@@ -91,8 +91,8 @@ window.onkeydown = function(e) {
 // TODO: handle this inside update? (since I'm using matrixes)
 document.addEventListener("mouseup", function(e){
 	var rect = canvas.getBoundingClientRect();
-	var mouse_x = event.clientX - rect.left;
-	var mouse_y = event.clientY - rect.top;
+	var mouse_x = e.clientX - rect.left;
+	var mouse_y = e.clientY - rect.top;
 
 	var x = (2.0 * mouse_x) / canvas.width - 1.0;
 	var y = 1.0 - (2.0 * mouse_y) / canvas.height;
