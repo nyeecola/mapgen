@@ -98,10 +98,10 @@ function update_and_render(time)
 				gl.vertexAttribPointer(model_pos_loc, 3, gl.FLOAT, gl.FALSE, 7 * 4, 0);
 				ext.vertexAttribDivisorANGLE(model_pos_loc, 1);
 
-				let inside_fow_loc = gl.getAttribLocation(shader_program, 'inside_fow');
-				gl.enableVertexAttribArray(inside_fow_loc);
-				gl.vertexAttribPointer(inside_fow_loc, 1, gl.FLOAT, gl.FALSE, 7 * 4, 6 * 4);
-				ext.vertexAttribDivisorANGLE(inside_fow_loc, 1);
+				let outside_fow_loc = gl.getAttribLocation(shader_program, 'outside_fow');
+				gl.enableVertexAttribArray(outside_fow_loc);
+				gl.vertexAttribPointer(outside_fow_loc, 1, gl.FLOAT, gl.FALSE, 7 * 4, 6 * 4);
+				ext.vertexAttribDivisorANGLE(outside_fow_loc, 1);
 			}
 
 			offset_tex_animation += 0.0001 * dt;
@@ -367,16 +367,25 @@ function main()
 
 	// costal sea line
 	// TODO: add costal sea line to bounding rows/columns (4 edges of the map)
-	for (let j = 1; j < columns - 1; j++) {
-		for (let i = 1; i < rows - 1; i++) {
+	for (let j = 0; j < columns; j++) {
+		for (let i = 0; i < rows; i++) {
 			let hex = hexes[j * rows + i];
-			if (hex.type == 'ocean' && (
-			    (hexes[(j-1) * rows + i].type != 'ocean' && hexes[(j-1) * rows + i].type != 'sea') ||
-			    (hexes[(j+1) * rows + i].type != 'ocean' && hexes[(j+1) * rows + i].type != 'sea') ||
-			    (hexes[(j) * rows + (i-1)].type != 'ocean' && hexes[(j) * rows + (i-1)].type != 'sea') ||
-			    (hexes[(j+1) * rows + (i-1)].type != 'ocean' && hexes[(j+1) * rows + (i-1)].type != 'sea') ||
-			    (hexes[(j-1) * rows + (i+1)].type != 'ocean' && hexes[(j-1) * rows + (i+1)].type != 'sea') ||
-			    (hexes[(j) * rows + (i+1)].type != 'ocean' && hexes[(j) * rows + (i+1)].type != 'sea')))
+			let neighbors = hex_get_neighbors(hex);
+			let is_costal = false;
+
+			if (hex.type == 'ocean')
+			{
+				for (let neighbor of neighbors)
+				{
+					if (neighbor.type != 'ocean' && neighbor.type != 'sea')
+					{
+						is_costal = true;
+						break;
+					}
+				}
+			}
+
+			if (is_costal)
 			{
 				hex.type = 'sea';
 				if (!hex_types_count[hex.type])
@@ -401,6 +410,12 @@ function main()
 		hex_types['forest'][3] = gl.createTexture();
 		handle_texture_loaded(image, hex_types['forest'][3], false);
 	});
+	/*
+	load_image('http://i.imgur.com/60l5fHy.png', function (image) {
+		hex_types['forest'][3] = gl.createTexture();
+		handle_texture_loaded(image, hex_types['forest'][3], false);
+	});
+	*/
 
 	load_image('http://i.imgur.com/RVZxP2K.png', function (image) {
 		hex_types['grassland'][3] = gl.createTexture();

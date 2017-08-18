@@ -9,7 +9,7 @@ function create_hex(x, y, grid_x, grid_y, elevation)
 		'type': null, // should call change_tile_type() to change after creation
 		'moisture': null, // should not be changed after creation (for now)
 		'elevation': null, // should not be changed after creation (for now)
-	        'seen': 1};
+	        'seen': 0};
 }
 
 function hex_corners(x, y)
@@ -97,3 +97,34 @@ function hex_distance_points(ax, ay, bx, by)
 	return Math.max(Math.abs(ax - bx), Math.abs(ay - by), Math.abs(ax + ay - bx - by));
 }
 
+function hex_get_neighbors(hex)
+{
+	let neighbors = [];
+
+	if (hex.grid_x > 0)
+	{
+		neighbors.push(hexes[(hex.grid_x-1) * rows + hex.grid_y]);
+	}
+	if (hex.grid_x < columns-1)
+	{
+		neighbors.push(hexes[(hex.grid_x+1) * rows + hex.grid_y]);
+	}
+	if (hex.grid_y > 0)
+	{
+		neighbors.push(hexes[(hex.grid_x) * rows + hex.grid_y-1]);
+		if (hex.grid_x < columns-1)
+		{
+			neighbors.push(hexes[(hex.grid_x+1) * rows + hex.grid_y-1]);
+		}
+	}
+	if (hex.grid_y < rows-1)
+	{
+		if (hex.grid_x > 0)
+		{
+			neighbors.push(hexes[(hex.grid_x-1) * rows + hex.grid_y+1]);
+		}
+		neighbors.push(hexes[(hex.grid_x) * rows + hex.grid_y+1]);
+	}
+
+	return neighbors;
+}

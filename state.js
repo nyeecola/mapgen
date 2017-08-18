@@ -44,7 +44,6 @@ var mountain_model_texture;
 var global_mesh_data;
 
 var hexes;
-var instance_arrays_of_hexes;
 var last_time = 0;
 var key_state = [];
 var camera;
@@ -54,9 +53,10 @@ var grid_mode = false;
 var offset_tex_animation = 0;
 var monkey_object;
 
-// TEST
-let hex_types_count = {};
-let hex_types_current = {};
+// variables regarding instance arrays of hexes
+var instance_arrays_of_hexes;
+var hex_types_count = {};
+var hex_types_current = {};
 
 // NOTE: in progress
 var hex_types = {
@@ -81,64 +81,64 @@ window.onkeydown = function(e) {
 
 // TODO: handle this inside update? (since I'm using matrixes)
 document.addEventListener("mouseup", function(e){
-	var rect = canvas.getBoundingClientRect();
-	var mouse_x = e.clientX - rect.left;
-	var mouse_y = e.clientY - rect.top;
+	let rect = canvas.getBoundingClientRect();
+	let mouse_x = e.clientX - rect.left;
+	let mouse_y = e.clientY - rect.top;
 
-	var x = (2.0 * mouse_x) / canvas.width - 1.0;
-	var y = 1.0 - (2.0 * mouse_y) / canvas.height;
-	var z = 1.0;
-	var ray_nds = {'x': x, 'y': y, 'z': z};
+	let x = (2.0 * mouse_x) / canvas.width - 1.0;
+	let y = 1.0 - (2.0 * mouse_y) / canvas.height;
+	let z = 1.0;
+	let ray_nds = {'x': x, 'y': y, 'z': z};
 
-	var ray_clip = vec4.fromValues(ray_nds.x, ray_nds.y, -1.0, 1.0);
+	let ray_clip = vec4.fromValues(ray_nds.x, ray_nds.y, -1.0, 1.0);
 
 	// TODO: stop rewriting this
-	var projection = mat4.create();
+	let projection = mat4.create();
 	projection = mat4.perspective(projection, glMatrix.toRadian(45), gl.drawingBufferWidth / gl.drawingBufferHeight, 0.1, 100);
 	projection = mat4.invert(projection, projection);
 
-	var ray_view = vec4.transformMat4(ray_clip, ray_clip, projection);
+	let ray_view = vec4.transformMat4(ray_clip, ray_clip, projection);
 	ray_view = vec4.fromValues(ray_view[0], ray_view[1], -1.0, 0.0);
 
 	// TODO: stop rewriting this
-	var view = mat4.create();
+	let view = mat4.create();
 	view = mat4.scale(view, view, vec3.fromValues(1.0 * camera.zoom, 1.0 * camera.zoom, 1.0));
 	view = mat4.rotate(view, view, glMatrix.toRadian(-50), vec3.fromValues(1.0, 0.0, 0.0));
 	view = mat4.translate(view, view, vec3.fromValues(camera.x, camera.y, camera.z));
 	view = mat4.invert(view, view);
 
-	var temp = vec4.fromValues(0, 0, 0, 0);
+	let temp = vec4.fromValues(0, 0, 0, 0);
 	temp = vec4.transformMat4(temp, ray_view, view);
-	var ray_world = vec3.fromValues(temp[0], temp[1], temp[2]);
+	let ray_world = vec3.fromValues(temp[0], temp[1], temp[2]);
 	ray_world = vec3.normalize(ray_world, ray_world);
 
 
 
-	var normal = vec3.fromValues(0, 0, 1);
-	var camera_origin = vec3.fromValues(-camera.x, -camera.y, -camera.z);
+	let normal = vec3.fromValues(0, 0, 1);
+	let camera_origin = vec3.fromValues(-camera.x, -camera.y, -camera.z);
 
-	var divisor = vec3.dot(ray_world, normal);
+	let divisor = vec3.dot(ray_world, normal);
 
 	// TODO
 	//if (vec3.dot(ray_world, normal) == ) handle this being null (does not intersect)
 
-	var t = - (vec3.dot(camera_origin, normal) + 0) / divisor;
+	let t = - (vec3.dot(camera_origin, normal) + 0) / divisor;
 
 	// otherwise intersected behind the view
-    let clicked_tile;
+	let clicked_tile;
 	if (t >= 0) 
 	{
-		var click_loc = vec3.add(camera_origin, camera_origin, vec3.scale(ray_world, ray_world, t));
+		let click_loc = vec3.add(camera_origin, camera_origin, vec3.scale(ray_world, ray_world, t));
 
-		for (var i = 0; i < hexes.length; i++)
+		for (let i = 0; i < hexes.length; i++)
 		{
-			var hex = hexes[i];
+			let hex = hexes[i];
 			if (Math.pow((hex.x - click_loc[0]), 2) + Math.pow((hex.y - click_loc[1]), 2) < Math.pow(radius, 2))
 			{
-                clicked_tile = hex;
-				var types = Object.keys(hex_types);
+				clicked_tile = hex;
+				let types = Object.keys(hex_types);
 				types.splice(types.indexOf(hex.type), 1);
-				var type = types[Math.floor(Math.random()*types.length)]
+				let type = types[Math.floor(Math.random()*types.length)]
 				if (e.which == 1) change_hex_type(hex, type);
 				break;
 			}
@@ -146,11 +146,27 @@ document.addEventListener("mouseup", function(e){
 	}
 
 
-    if (e.which == 3 && clicked_tile)
-    {
-	if (hex.seen) hex.seen = 0;
-	else hex.seen = 1;
-	instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
-    }
+	if (e.which == 3 && clicked_tile)
+	{
+		let neighbors = hex_get_neighbors(clicked_tile);
+
+		if (clicked_tile.seen)
+		{
+			clicked_tile.seen = 0;
+			for (let hex of neighbors)
+			{
+				hex.seen = 0;
+			}
+		}
+		else
+		{
+			clicked_tile.seen = 1;
+			for (let hex of neighbors)
+			{
+				hex.seen = 1;
+			}
+		}
+		instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
+	}
 });
 
