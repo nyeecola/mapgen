@@ -3,7 +3,6 @@
 // Features:
 // add font/text support
 // create loading screen
-// add fog of war
 // add lightning/shadowing
 // add mouse-controlled camera movement (plus zoom)
 // add wrap-around left/right (efficiently)
@@ -70,14 +69,6 @@ var hex_types = {
 	'ice': [0.5, 0.9, 1, null]
 };
 
-function create_camera(x, y, z)
-{
-	return {'x': x,
-		'y': y,
-		'z': z,
-		'speed': 0.004};
-}
-
 window.onkeyup = function(e) {
 	key_state[e.key]=false;
 }
@@ -111,7 +102,7 @@ document.addEventListener("mouseup", function(e){
 
 	// TODO: stop rewriting this
 	var view = mat4.create();
-	view = mat4.scale(view, view, vec3.fromValues(1.0 * zoom, 1.0 * zoom, 1.0));
+	view = mat4.scale(view, view, vec3.fromValues(1.0 * camera.zoom, 1.0 * camera.zoom, 1.0));
 	view = mat4.rotate(view, view, glMatrix.toRadian(-50), vec3.fromValues(1.0, 0.0, 0.0));
 	view = mat4.translate(view, view, vec3.fromValues(camera.x, camera.y, camera.z));
 	view = mat4.invert(view, view);

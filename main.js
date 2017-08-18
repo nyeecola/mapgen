@@ -1,5 +1,3 @@
-let zoom = 1;
-
 function update_and_render(time)
 {
 	// update
@@ -17,9 +15,9 @@ function update_and_render(time)
 		if ('ArrowDown' in key_state && key_state['ArrowDown'])
 			camera.y += dt * camera.speed;
 		if ('z' in key_state && key_state['z'])
-			zoom += dt * camera.speed * 0.2;
+			camera.zoom += dt * camera.speed * 0.2;
 		if ('x' in key_state && key_state['x'])
-			zoom -= dt * camera.speed * 0.2;
+			camera.zoom -= dt * camera.speed * 0.2;
 	}
 
 	// render frame
@@ -30,7 +28,7 @@ function update_and_render(time)
 
 		// camera view matrix
 		let view = mat4.create();
-		view = mat4.scale(view, view, vec3.fromValues(1.0 * zoom, 1.0 * zoom, 1.0));
+		view = mat4.scale(view, view, vec3.fromValues(1.0 * camera.zoom, 1.0 * camera.zoom, 1.0));
 		view = mat4.rotate(view, view, glMatrix.toRadian(-50), vec3.fromValues(1.0, 0.0, 0.0));
 		view = mat4.translate(view, view, vec3.fromValues(camera.x, camera.y, camera.z));
 
@@ -396,7 +394,7 @@ function main()
 	instance_buffer = gl.createBuffer();
 	tex_coords_buffer = gl.createBuffer()
 
-	camera = {'x': -6, 'y': -2.5, 'z': -2.8, 'speed': 0.004};
+	camera = {'x': -6, 'y': -2.5, 'z': -2.8, 'speed': 0.004, 'zoom': 1.0};
 
 	// TODO: wait for image to be loaded before starting to render scene (loading screen)
 	load_image('http://i.imgur.com/n7ezMnp.png', function (image) {
