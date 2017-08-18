@@ -48,7 +48,7 @@ function update_and_render(time)
 		let hex_indices = [0, 1, 2, 0, 2, 3, 0, 3, 5, 3, 4, 5];
 		{
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices_buffer);
-			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(hex_indices), gl.STATIC_DRAW);
+			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(hex_indices), gl.STREAM_DRAW);
 		}
 
 		// upload data to array_buffer
@@ -57,7 +57,7 @@ function update_and_render(time)
 		let hex_verts = hex_corners(0, 0);
 		{
 			gl.bindBuffer(gl.ARRAY_BUFFER, array_buffer);
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(hex_verts), gl.STATIC_DRAW);
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(hex_verts), gl.STREAM_DRAW);
 
 			let attrib_loc = gl.getAttribLocation(shader_program, 'position');
 			gl.enableVertexAttribArray(attrib_loc);
@@ -75,7 +75,7 @@ function update_and_render(time)
 				gl.bindBuffer(gl.ARRAY_BUFFER, tex_coords_buffer);
 
 				let tex_coords = [1, 0, 0.5, -0.5, 0, 0, 0, 1, 0.5, 1.5, 1, 1];
-				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tex_coords), gl.STATIC_DRAW);
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tex_coords), gl.STREAM_DRAW);
 
 				let tex_coord_loc = gl.getAttribLocation(shader_program, 'p_tex_coord');
 				gl.enableVertexAttribArray(tex_coord_loc);
@@ -93,10 +93,10 @@ function update_and_render(time)
 				gl.vertexAttribPointer(model_pos_loc, 3, gl.FLOAT, gl.FALSE, 7 * 4, 0);
 				ext.vertexAttribDivisorANGLE(model_pos_loc, 1);
 
-				let fog_pos_loc = gl.getAttribLocation(shader_program, 'fog_flag');
-				gl.enableVertexAttribArray(fog_pos_loc);
-				gl.vertexAttribPointer(fog_pos_loc, 1, gl.FLOAT, gl.FALSE, 7 * 4, 6 * 4);
-				ext.vertexAttribDivisorANGLE(fog_pos_loc, 1);
+				let inside_fow_loc = gl.getAttribLocation(shader_program, 'inside_fow');
+				gl.enableVertexAttribArray(inside_fow_loc);
+				gl.vertexAttribPointer(inside_fow_loc, 1, gl.FLOAT, gl.FALSE, 7 * 4, 6 * 4);
+				ext.vertexAttribDivisorANGLE(inside_fow_loc, 1);
 			}
 
 			offset_tex_animation += 0.0001 * dt;
@@ -119,7 +119,7 @@ function update_and_render(time)
 				ext.vertexAttribDivisorANGLE(color_loc, 1);
 
 				// upload data to instance_buffer
-				gl.bufferData(gl.ARRAY_BUFFER, instance_arrays_of_hexes[array], gl.STATIC_DRAW);
+				gl.bufferData(gl.ARRAY_BUFFER, instance_arrays_of_hexes[array], gl.STREAM_DRAW);
 
 				// use texture on tiles that have one and don't use them in tiles that haven't
 				if (hex_types[array][3] !== null)
@@ -160,7 +160,7 @@ function update_and_render(time)
 			// draw meshes (currently only mountain)
 			{
 				// upload data to instance_buffer
-				gl.bufferData(gl.ARRAY_BUFFER, instance_arrays_of_hexes['mountain'], gl.STATIC_DRAW);
+				gl.bufferData(gl.ARRAY_BUFFER, instance_arrays_of_hexes['mountain'], gl.STREAM_DRAW);
 
 				// change model matrix
 				let model = mat4.create();
@@ -175,7 +175,7 @@ function update_and_render(time)
 				gl.vertexAttrib3f(color_loc, 1, 0, 0);
 
 				gl.bindBuffer(gl.ARRAY_BUFFER, array_buffer);
-				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(global_mesh_data.vertices), gl.STATIC_DRAW);
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(global_mesh_data.vertices), gl.STREAM_DRAW);
 				let attrib_loc = gl.getAttribLocation(shader_program, 'position');
 				gl.enableVertexAttribArray(attrib_loc);
 				gl.vertexAttribPointer(attrib_loc, 3, gl.FLOAT, gl.FALSE, 3 * 4, 0);
@@ -184,7 +184,7 @@ function update_and_render(time)
 
 				let mesh_indices = [].concat.apply([], global_mesh_data.faces);
 				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices_buffer);
-				gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(mesh_indices), gl.STATIC_DRAW);
+				gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(mesh_indices), gl.STREAM_DRAW);
 
 				// disable tex_coord_offset and enable texture
 				gl.uniform1f(gl.getUniformLocation(shader_program, 'tex_coord_offset'), 0);
@@ -192,7 +192,7 @@ function update_and_render(time)
 
 				// upload texture coords
 				gl.bindBuffer(gl.ARRAY_BUFFER, tex_coords_buffer);
-				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(global_mesh_data.texturecoords[0]), gl.STATIC_DRAW);
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(global_mesh_data.texturecoords[0]), gl.STREAM_DRAW);
 
 				// attach texture coords to texture coords buffer
 				let tex_coord_loc = gl.getAttribLocation(shader_program, 'p_tex_coord');
@@ -351,6 +351,11 @@ function main()
 			}
 
 			hex.type = candidates_names[chosen];
+			if (!hex_types_count[hex.type])
+			{
+				hex_types_count[hex.type] = 0;
+			}
+			hex_types_count[hex.type] += 1;
 			hexes.push(hex);
 		}
 	}
@@ -369,6 +374,12 @@ function main()
 			    (hexes[(j) * rows + (i+1)].type != 'ocean' && hexes[(j) * rows + (i+1)].type != 'sea')))
 			{
 				hex.type = 'sea';
+				if (!hex_types_count[hex.type])
+				{
+					hex_types_count[hex.type] = 0;
+				}
+				hex_types_count[hex.type] += 1;
+				hex_types_count['ocean'] -= 1;
 			}
 		}
 	}

@@ -8,7 +8,8 @@ function create_hex(x, y, grid_x, grid_y, elevation)
 		'width': Math.sqrt(3)/2 * radius,
 		'type': null, // should call change_tile_type() to change after creation
 		'moisture': null, // should not be changed after creation (for now)
-		'elevation': null}; // should not be changed after creation (for now)
+		'elevation': null, // should not be changed after creation (for now)
+	        'seen': 1};
 }
 
 function hex_corners(x, y)
@@ -32,17 +33,20 @@ function create_hexes_instance_arrays(hexes)
 	hexes_instance_arrays = {};
 
 	for (let hex of hexes)
-    {
+	{
 		if(!hexes_instance_arrays.hasOwnProperty(hex.type))
 		{
-			hexes_instance_arrays[hex.type] = [];
+			hexes_instance_arrays[hex.type] = new Float32Array(hex_types_count[hex.type] * 7);
+			hex_types_current[hex.type] = 0;
 		}
-		hexes_instance_arrays[hex.type] = hexes_instance_arrays[hex.type].concat([hex.x, hex.y, 0, hex_types[hex.type][0], hex_types[hex.type][1], hex_types[hex.type][2], 1]);
-	}
-
-	for (let array in hexes_instance_arrays)
-	{
-		hexes_instance_arrays[array] = new Float32Array(hexes_instance_arrays[array]);
+		hexes_instance_arrays[hex.type][hex_types_current[hex.type]] = hex.x;
+		hexes_instance_arrays[hex.type][hex_types_current[hex.type] + 1] = hex.y;
+		hexes_instance_arrays[hex.type][hex_types_current[hex.type] + 2] = 0;
+		hexes_instance_arrays[hex.type][hex_types_current[hex.type] + 3] = hex_types[hex.type][0];
+		hexes_instance_arrays[hex.type][hex_types_current[hex.type] + 4] = hex_types[hex.type][1];
+		hexes_instance_arrays[hex.type][hex_types_current[hex.type] + 5] = hex_types[hex.type][2];
+		hexes_instance_arrays[hex.type][hex_types_current[hex.type] + 6] = hex.seen;
+		hex_types_current[hex.type] += 7;
 	}
 
 	return hexes_instance_arrays;
@@ -56,6 +60,7 @@ function get_hex_at(x, y)
 // TODO: improve performance of this function
 function change_hex_type(hex, type)
 {
+	/*
 	let array = instance_arrays_of_hexes[hex.type];
 	let i = array.length;
 	for (; i > 0; i--)
@@ -74,6 +79,12 @@ function change_hex_type(hex, type)
 	instance_arrays_of_hexes[hex.type] = new Float32Array(temp_array);
 	instance_arrays_of_hexes[type] = new Float32Array(Array.from(instance_arrays_of_hexes[type]).concat(removed));
 	hex.type = type;
+	*/
+
+	hex_types_count[type] += 1;
+	hex_types_count[hex.type] -= 1;
+	hex.type = type;
+	instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
 }
 
 function hex_distance(a, b)

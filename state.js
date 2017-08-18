@@ -55,7 +55,10 @@ var max_elevations = 3;
 var grid_mode = false;
 var offset_tex_animation = 0;
 var monkey_object;
-var selected_tile;
+
+// TEST
+let hex_types_count = {};
+let hex_types_current = {};
 
 // NOTE: in progress
 var hex_types = {
@@ -79,6 +82,7 @@ function create_camera(x, y, z)
 window.onkeyup = function(e) {
 	key_state[e.key]=false;
 }
+
 window.onkeydown = function(e) {
 	key_state[e.key]=true;
 
@@ -86,7 +90,7 @@ window.onkeydown = function(e) {
 }
 
 // TODO: handle this inside update? (since I'm using matrixes)
-document.addEventListener("click", function(e){
+document.addEventListener("mouseup", function(e){
 	var rect = canvas.getBoundingClientRect();
 	var mouse_x = event.clientX - rect.left;
 	var mouse_y = event.clientY - rect.top;
@@ -144,37 +148,18 @@ document.addEventListener("click", function(e){
 				var types = Object.keys(hex_types);
 				types.splice(types.indexOf(hex.type), 1);
 				var type = types[Math.floor(Math.random()*types.length)]
-				//change_hex_type(hex, type);
+				if (e.which == 1) change_hex_type(hex, type);
 				break;
 			}
 		}
 	}
 
 
-    // TODO: 
-    if (e.which == 2 && clicked_tile)
+    if (e.which == 3 && clicked_tile)
     {
-        // TODO: think about it, what about multiple tiles? (also, currently not being used)
-        selected_tile = clicked_tile;
-
-        let array = instance_arrays_of_hexes[hex.type];
-        let i = array.length;
-        for (; i > 0; i--)
-        {
-            // hack to check if it is the same hex, we probably shouldn't be search linearly anyway
-            if (Math.abs(hex.x - array[i]) <= 0.000001 && Math.abs(hex.y - array[i+1]) <= 0.000001)
-            {
-                if (array[i+6] < 0.5)
-                {
-                    array[i+6] = 1;
-                }
-                else
-                {
-                    array[i+6] = 0;
-                }
-                break;
-            }
-        }
+	if (hex.seen) hex.seen = 0;
+	else hex.seen = 1;
+	instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
     }
 });
 
