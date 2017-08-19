@@ -79,6 +79,33 @@ window.onkeydown = function(e) {
 	key_state[e.key]=true;
 
 	if (e.key == 'g') grid_mode = !grid_mode;
+
+	if (e.key == '1')
+	{
+		let w = window.innerWidth / 2;
+		let h = window.innerHeight / 2;
+		canvas.width = w;
+		canvas.height = h;
+		gl.viewport(0, 0, w, h);
+	}
+
+	if (e.key == '2')
+	{
+		let w = window.innerWidth * 0.67;
+		let h = window.innerHeight * 0.67;
+		canvas.width = w;
+		canvas.height = h;
+		gl.viewport(0, 0, w, h);
+	}
+
+	if (e.key == '3')
+	{
+		let w = window.innerWidth;
+		let h = window.innerHeight;
+		canvas.width = w;
+		canvas.height = h;
+		gl.viewport(0, 0, w, h);
+	}
 }
 
 // TODO: handle this inside update? (since I'm using matrixes)
@@ -87,8 +114,8 @@ document.addEventListener("mouseup", function(e){
 	let mouse_x = e.clientX - rect.left;
 	let mouse_y = e.clientY - rect.top;
 
-	let x = (2.0 * mouse_x) / canvas.width - 1.0;
-	let y = 1.0 - (2.0 * mouse_y) / canvas.height;
+	let x = (2.0 * mouse_x) / window.innerWidth - 1.0;
+	let y = 1.0 - (2.0 * mouse_y) / window.innerHeight;
 	let z = 1.0;
 	let ray_nds = {'x': x, 'y': y, 'z': z};
 
