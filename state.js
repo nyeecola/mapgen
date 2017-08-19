@@ -34,8 +34,8 @@ var ext;
 var shader_program;
 var array_buffer;
 var indices_buffer;
-var instance_buffer;
 var tex_coords_buffer;
+var instance_buffers = {};
 
 // engine state
 
