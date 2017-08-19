@@ -41,7 +41,9 @@ var tex_coords_buffer;
 
 // TODO: create an object to hold textures/meshes
 var mountain_model_texture;
+var tree_model_texture;
 var global_mesh_data;
+var global_mesh_data2;
 
 var hexes;
 var last_time = 0;

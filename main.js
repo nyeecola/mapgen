@@ -174,11 +174,6 @@ function update_and_render(time)
 				let model_loc = gl.getUniformLocation(shader_program, "model");
 				gl.uniformMatrix4fv(model_loc, gl.FALSE, model);
 
-				// set color to all red
-				let color_loc = gl.getAttribLocation(shader_program, 'color');
-				gl.disableVertexAttribArray(color_loc);
-				gl.vertexAttrib3f(color_loc, 1, 0, 0);
-
 				gl.bindBuffer(gl.ARRAY_BUFFER, array_buffer);
 				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(global_mesh_data.vertices), gl.STREAM_DRAW);
 				let attrib_loc = gl.getAttribLocation(shader_program, 'position');
@@ -210,6 +205,39 @@ function update_and_render(time)
 				gl.uniform1i(gl.getUniformLocation(shader_program, 'texture_sampler'), 0);
 
 				ext.drawElementsInstancedANGLE(gl.TRIANGLES, mesh_indices.length, gl.UNSIGNED_SHORT, 0, instance_arrays_of_hexes['mountain'].length/7);
+
+
+				// TEST
+				// upload data to instance_buffer
+				gl.bindBuffer(gl.ARRAY_BUFFER, instance_buffer);
+				gl.bufferData(gl.ARRAY_BUFFER, instance_arrays_of_hexes['forest'], gl.STREAM_DRAW);
+				// change model matrix
+				model = mat4.create();
+				model = mat4.scale(model, model, vec3.fromValues(0.02, 0.02, 0.03));
+				model = mat4.translate(model, model, vec3.fromValues(0.0, 0.0, 0.4));
+				model_loc = gl.getUniformLocation(shader_program, "model");
+				gl.uniformMatrix4fv(model_loc, gl.FALSE, model);
+
+				gl.bindBuffer(gl.ARRAY_BUFFER, array_buffer);
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(global_mesh_data2.vertices), gl.STREAM_DRAW);
+
+				mesh_indices = [].concat.apply([], global_mesh_data2.faces);
+				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices_buffer);
+				gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(mesh_indices), gl.STREAM_DRAW);
+
+				// disable texture
+				gl.disableVertexAttribArray(tex_coord_loc);
+				gl.uniform1i(gl.getUniformLocation(shader_program, 'texture_enabled'), 0);
+				// upload texture coords
+				//gl.bindBuffer(gl.ARRAY_BUFFER, tex_coords_buffer);
+				//gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(global_mesh_data2.texturecoords[0]), gl.STREAM_DRAW);
+
+				// activate texture
+				//gl.activeTexture(gl.TEXTURE0);
+				//gl.bindTexture(gl.TEXTURE_2D, tree_model_texture);
+				//gl.uniform1i(gl.getUniformLocation(shader_program, 'texture_sampler'), 0);
+
+				ext.drawElementsInstancedANGLE(gl.TRIANGLES, mesh_indices.length, gl.UNSIGNED_SHORT, 0, instance_arrays_of_hexes['forest'].length/7);
 			}
 		}
 	}
@@ -442,10 +470,16 @@ function main()
 		handle_texture_loaded(image, mountain_model_texture, true);
 	});
 
+	load_image('http://i.imgur.com/nabvSuW.png', function (image) {
+		tree_model_texture = gl.createTexture();
+		handle_texture_loaded(image, tree_model_texture, true);
+	});
+
 	instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
 
 	// TEST
 	global_mesh_data = global_mesh_data.meshes[0];
+	global_mesh_data2 = global_mesh_data2.meshes[0];
 
 	requestAnimationFrame(update_and_render);
 }

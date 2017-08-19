@@ -9,7 +9,7 @@ function initGL() {
 	canvas.height = height;
 
 	gl.viewport(0,0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-	gl.clearColor(0, 0, 0, 1);
+	gl.clearColor(0.7, 0.7, 0.7, 1);
 
 	gl.enable(gl.DEPTH_TEST);
 	gl.enable(gl.CULL_FACE);
