@@ -43,8 +43,10 @@ var instance_buffers = {};
 // TODO: create an object to hold textures/meshes
 var mountain_model_texture;
 var tree_model_texture;
+var settler_model_texture;
 var global_mesh_data;
 var global_mesh_data2;
+var global_mesh_data3;
 
 var hexes;
 var last_time = 0;
@@ -54,7 +56,7 @@ var sea_level = 0;
 var max_elevations = 3;
 var grid_mode = false;
 var offset_tex_animation = 0;
-var monkey_object;
+var settler = {'x': 30, 'y': 30};
 
 // variables regarding instance arrays of hexes
 var instance_arrays_of_hexes;
@@ -106,6 +108,58 @@ window.onkeydown = function(e) {
 		canvas.width = w;
 		canvas.height = h;
 		gl.viewport(0, 0, w, h);
+	}
+
+	// test settler movement
+	// TODO: check boundaries of map/land
+	let moved = false;
+	if (e.key == 'w' || e.key == 'a' || e.key == 's' || e.key == 'd')
+	{
+		let current_tile = hexes[settler.x * rows + settler.y];
+		let neighbors = hex_get_neighbors(current_tile);
+
+		current_tile.seen = 0;
+		for (let hex of neighbors)
+		{
+			hex.seen = 0;
+		}
+	}
+
+	if (e.key == 'w')
+	{
+		settler.y += 1;
+		moved = true;
+	}
+
+	if (e.key == 'a')
+	{
+		settler.x -= 1;
+		moved = true;
+	}
+
+	if (e.key == 's')
+	{
+		settler.y -= 1;
+		moved = true;
+	}
+
+	if (e.key == 'd')
+	{
+		settler.x += 1;
+		moved = true;
+	}
+
+	if (moved == true)
+	{
+		let current_tile = hexes[settler.x * rows + settler.y];
+		let neighbors = hex_get_neighbors(current_tile);
+
+		current_tile.seen = 1;
+		for (let hex of neighbors)
+		{
+			hex.seen = 1;
+		}
+		instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
 	}
 }
 

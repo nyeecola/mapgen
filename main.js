@@ -240,7 +240,7 @@ function update_and_render(time)
 
 				ext.drawElementsInstancedANGLE(gl.TRIANGLES, mesh_indices.length, gl.UNSIGNED_SHORT, 0, instance_arrays_of_hexes['mountain'].length/7);
 
-				// TEST
+				// TEST FORESTS
 				// change model matrix
 				model = mat4.create();
 				model = mat4.scale(model, model, vec3.fromValues(0.02, 0.02, 0.03));
@@ -281,11 +281,62 @@ function update_and_render(time)
 
 				color_loc = gl.getAttribLocation(shader_program, 'color');
 				gl.enableVertexAttribArray(color_loc);
+				//gl.disableVertexAttribArray(color_loc); TODO: uncomment this
 				gl.vertexAttribPointer(color_loc, 3, gl.FLOAT, gl.FALSE, 7 * 4, 3 * 4);
 				ext.vertexAttribDivisorANGLE(color_loc, 1);
 				//gl.bufferData(gl.ARRAY_BUFFER, instance_arrays_of_hexes['forest'], gl.STREAM_DRAW);
 
 				ext.drawElementsInstancedANGLE(gl.TRIANGLES, mesh_indices.length, gl.UNSIGNED_SHORT, 0, instance_arrays_of_hexes['forest'].length/7);
+
+
+				// TEST SETTLER
+
+				// change model matrix
+				model = mat4.create();
+				model = mat4.scale(model, model, vec3.fromValues(0.02, 0.02, 0.02));
+				model = mat4.translate(model, model, vec3.fromValues(0.0, 0.0, 0.4));
+				model_loc = gl.getUniformLocation(shader_program, "model");
+				gl.uniformMatrix4fv(model_loc, gl.FALSE, model);
+
+				gl.bindBuffer(gl.ARRAY_BUFFER, array_buffer);
+				attrib_loc = gl.getAttribLocation(shader_program, 'position');
+				gl.enableVertexAttribArray(attrib_loc);
+				gl.vertexAttribPointer(attrib_loc, 3, gl.FLOAT, gl.FALSE, 3 * 4, 0);
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(global_mesh_data3.vertices), gl.STREAM_DRAW);
+
+				mesh_indices = [].concat.apply([], global_mesh_data3.faces);
+				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices_buffer);
+				gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(mesh_indices), gl.STREAM_DRAW);
+
+				// disable texture
+				gl.uniform1i(gl.getUniformLocation(shader_program, 'texture_enabled'), 1);
+				// upload texture coords
+				gl.bindBuffer(gl.ARRAY_BUFFER, tex_coords_buffer);
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(global_mesh_data3.texturecoords[0]), gl.STREAM_DRAW);
+				tex_coord_loc = gl.getAttribLocation(shader_program, 'p_tex_coord');
+				gl.enableVertexAttribArray(tex_coord_loc);
+				gl.vertexAttribPointer(tex_coord_loc, 2, gl.FLOAT, gl.FALSE, 2 * 4, 0);
+
+				// activate texture
+				gl.activeTexture(gl.TEXTURE0);
+				gl.bindTexture(gl.TEXTURE_2D, settler_model_texture);
+				gl.uniform1i(gl.getUniformLocation(shader_program, 'texture_sampler'), 0);
+
+				model_pos_loc = gl.getAttribLocation(shader_program, 'model_position');
+				gl.disableVertexAttribArray(model_pos_loc);
+				gl.vertexAttrib3f(model_pos_loc, hexes[settler.x * rows + settler.y].x, hexes[settler.x * rows + settler.y].y, 0);
+
+				outside_fow_loc = gl.getAttribLocation(shader_program, 'outside_fow');
+				gl.disableVertexAttribArray(outside_fow_loc);
+				gl.vertexAttrib1f(outside_fow_loc, 1);
+
+				/*
+				color_loc = gl.getAttribLocation(shader_program, 'color');
+				gl.disableVertexAttribArray(color_loc);
+				gl.vertexAttrib3f(color_loc, 7, 3, 4);
+				*/
+
+				gl.drawElements(gl.TRIANGLES, mesh_indices.length, gl.UNSIGNED_SHORT, 0);
 			}
 		}
 	}
@@ -522,11 +573,30 @@ function main()
 		handle_texture_loaded(image, tree_model_texture, true);
 	});
 
+	load_image('http://i.imgur.com/qlJxz7J.png', function (image) {
+		settler_model_texture = gl.createTexture();
+		handle_texture_loaded(image, settler_model_texture, true);
+	});
+
 	instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
 
 	// TEST
 	global_mesh_data = global_mesh_data.meshes[0];
 	global_mesh_data2 = global_mesh_data2.meshes[0];
+	global_mesh_data3 = global_mesh_data3.meshes[0];
+
+	// NOTE: just for testing purposes
+	{
+		let current_tile = hexes[settler.x * rows + settler.y];
+		let neighbors = hex_get_neighbors(current_tile);
+
+		current_tile.seen = 1;
+		for (let hex of neighbors)
+		{
+			hex.seen = 1;
+		}
+		instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
+	}
 
 	requestAnimationFrame(update_and_render);
 }
