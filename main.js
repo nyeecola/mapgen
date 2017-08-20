@@ -91,8 +91,9 @@ function update_and_render(time)
 			// bind instance_buffer
 			// attach buffer data to model_position attribute
 			{
-				gl.bindBuffer(gl.ARRAY_BUFFER, instance_buffer);
+				//gl.bindBuffer(gl.ARRAY_BUFFER, instance_buffer);
 
+				/*
 				let model_pos_loc = gl.getAttribLocation(shader_program, 'model_position');
 				gl.enableVertexAttribArray(model_pos_loc);
 				gl.vertexAttribPointer(model_pos_loc, 3, gl.FLOAT, gl.FALSE, 7 * 4, 0);
@@ -102,6 +103,7 @@ function update_and_render(time)
 				gl.enableVertexAttribArray(outside_fow_loc);
 				gl.vertexAttribPointer(outside_fow_loc, 1, gl.FLOAT, gl.FALSE, 7 * 4, 6 * 4);
 				ext.vertexAttribDivisorANGLE(outside_fow_loc, 1);
+				*/
 			}
 
 			offset_tex_animation += 0.0001 * dt;
@@ -118,13 +120,30 @@ function update_and_render(time)
 				}
 
 				// attach buffer data to color attribute
+				/*
 				let color_loc = gl.getAttribLocation(shader_program, 'color');
 				gl.enableVertexAttribArray(color_loc);
 				gl.vertexAttribPointer(color_loc, 3, gl.FLOAT, gl.FALSE, 7 * 4, 3 * 4);
 				ext.vertexAttribDivisorANGLE(color_loc, 1);
+				*/
 
 				// upload data to instance_buffer
-				gl.bufferData(gl.ARRAY_BUFFER, instance_arrays_of_hexes[array], gl.STREAM_DRAW);
+				gl.bindBuffer(gl.ARRAY_BUFFER, instance_buffers[array]);
+				let model_pos_loc = gl.getAttribLocation(shader_program, 'model_position');
+				gl.enableVertexAttribArray(model_pos_loc);
+				gl.vertexAttribPointer(model_pos_loc, 3, gl.FLOAT, gl.FALSE, 7 * 4, 0);
+				ext.vertexAttribDivisorANGLE(model_pos_loc, 1);
+
+				let outside_fow_loc = gl.getAttribLocation(shader_program, 'outside_fow');
+				gl.enableVertexAttribArray(outside_fow_loc);
+				gl.vertexAttribPointer(outside_fow_loc, 1, gl.FLOAT, gl.FALSE, 7 * 4, 6 * 4);
+				ext.vertexAttribDivisorANGLE(outside_fow_loc, 1);
+
+				let color_loc = gl.getAttribLocation(shader_program, 'color');
+				gl.enableVertexAttribArray(color_loc);
+				gl.vertexAttribPointer(color_loc, 3, gl.FLOAT, gl.FALSE, 7 * 4, 3 * 4);
+				ext.vertexAttribDivisorANGLE(color_loc, 1);
+				//gl.bufferData(gl.ARRAY_BUFFER, instance_arrays_of_hexes[array], gl.STREAM_DRAW);
 
 				// use texture on tiles that have one and don't use them in tiles that haven't
 				if (hex_types[array][3] !== null)
@@ -164,9 +183,6 @@ function update_and_render(time)
 
 			// draw meshes (currently only mountain)
 			{
-				// upload data to instance_buffer
-				gl.bufferData(gl.ARRAY_BUFFER, instance_arrays_of_hexes['mountain'], gl.STREAM_DRAW);
-
 				// change model matrix
 				let model = mat4.create();
 				model = mat4.scale(model, model, vec3.fromValues(0.08, 0.08, 0.08));
@@ -204,13 +220,27 @@ function update_and_render(time)
 				gl.bindTexture(gl.TEXTURE_2D, mountain_model_texture);
 				gl.uniform1i(gl.getUniformLocation(shader_program, 'texture_sampler'), 0);
 
+				gl.bindBuffer(gl.ARRAY_BUFFER, instance_buffers['mountain']);
+				let model_pos_loc = gl.getAttribLocation(shader_program, 'model_position');
+				gl.enableVertexAttribArray(model_pos_loc);
+				gl.vertexAttribPointer(model_pos_loc, 3, gl.FLOAT, gl.FALSE, 7 * 4, 0);
+				ext.vertexAttribDivisorANGLE(model_pos_loc, 1);
+
+				let outside_fow_loc = gl.getAttribLocation(shader_program, 'outside_fow');
+				gl.enableVertexAttribArray(outside_fow_loc);
+				gl.vertexAttribPointer(outside_fow_loc, 1, gl.FLOAT, gl.FALSE, 7 * 4, 6 * 4);
+				ext.vertexAttribDivisorANGLE(outside_fow_loc, 1);
+
+				let color_loc = gl.getAttribLocation(shader_program, 'color');
+				gl.enableVertexAttribArray(color_loc);
+				gl.vertexAttribPointer(color_loc, 3, gl.FLOAT, gl.FALSE, 7 * 4, 3 * 4);
+				ext.vertexAttribDivisorANGLE(color_loc, 1);
+				// upload data to instance_buffer
+				//gl.bufferData(gl.ARRAY_BUFFER, instance_arrays_of_hexes['mountain'], gl.STREAM_DRAW);
+
 				ext.drawElementsInstancedANGLE(gl.TRIANGLES, mesh_indices.length, gl.UNSIGNED_SHORT, 0, instance_arrays_of_hexes['mountain'].length/7);
 
-
 				// TEST
-				// upload data to instance_buffer
-				gl.bindBuffer(gl.ARRAY_BUFFER, instance_buffer);
-				gl.bufferData(gl.ARRAY_BUFFER, instance_arrays_of_hexes['forest'], gl.STREAM_DRAW);
 				// change model matrix
 				model = mat4.create();
 				model = mat4.scale(model, model, vec3.fromValues(0.02, 0.02, 0.03));
@@ -236,6 +266,24 @@ function update_and_render(time)
 				//gl.activeTexture(gl.TEXTURE0);
 				//gl.bindTexture(gl.TEXTURE_2D, tree_model_texture);
 				//gl.uniform1i(gl.getUniformLocation(shader_program, 'texture_sampler'), 0);
+
+				// upload data to instance_buffer
+				gl.bindBuffer(gl.ARRAY_BUFFER, instance_buffers['forest']);
+				model_pos_loc = gl.getAttribLocation(shader_program, 'model_position');
+				gl.enableVertexAttribArray(model_pos_loc);
+				gl.vertexAttribPointer(model_pos_loc, 3, gl.FLOAT, gl.FALSE, 7 * 4, 0);
+				ext.vertexAttribDivisorANGLE(model_pos_loc, 1);
+
+				outside_fow_loc = gl.getAttribLocation(shader_program, 'outside_fow');
+				gl.enableVertexAttribArray(outside_fow_loc);
+				gl.vertexAttribPointer(outside_fow_loc, 1, gl.FLOAT, gl.FALSE, 7 * 4, 6 * 4);
+				ext.vertexAttribDivisorANGLE(outside_fow_loc, 1);
+
+				color_loc = gl.getAttribLocation(shader_program, 'color');
+				gl.enableVertexAttribArray(color_loc);
+				gl.vertexAttribPointer(color_loc, 3, gl.FLOAT, gl.FALSE, 7 * 4, 3 * 4);
+				ext.vertexAttribDivisorANGLE(color_loc, 1);
+				//gl.bufferData(gl.ARRAY_BUFFER, instance_arrays_of_hexes['forest'], gl.STREAM_DRAW);
 
 				ext.drawElementsInstancedANGLE(gl.TRIANGLES, mesh_indices.length, gl.UNSIGNED_SHORT, 0, instance_arrays_of_hexes['forest'].length/7);
 			}
@@ -428,7 +476,6 @@ function main()
 
 	array_buffer = gl.createBuffer();
 	indices_buffer = gl.createBuffer();
-	instance_buffer = gl.createBuffer();
 	tex_coords_buffer = gl.createBuffer()
 
 	camera = {'x': -6, 'y': -2.5, 'z': -2.8, 'speed': 0.004, 'zoom': 1.0};

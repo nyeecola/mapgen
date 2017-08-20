@@ -36,6 +36,10 @@ function create_hexes_instance_arrays(hexes)
 	{
 		if(!hexes_instance_arrays.hasOwnProperty(hex.type))
 		{
+			if (!instance_buffers.hasOwnProperty(hex.type))
+			{
+				instance_buffers[hex.type] = gl.createBuffer();
+			}
 			hexes_instance_arrays[hex.type] = new Float32Array(hex_types_count[hex.type] * 7);
 			hex_types_current[hex.type] = 0;
 		}
@@ -47,6 +51,12 @@ function create_hexes_instance_arrays(hexes)
 		hexes_instance_arrays[hex.type][hex_types_current[hex.type] + 5] = hex_types[hex.type][2];
 		hexes_instance_arrays[hex.type][hex_types_current[hex.type] + 6] = hex.seen;
 		hex_types_current[hex.type] += 7;
+	}
+
+	for (let key in instance_buffers)
+	{
+		gl.bindBuffer(gl.ARRAY_BUFFER, instance_buffers[key]);
+		gl.bufferData(gl.ARRAY_BUFFER, hexes_instance_arrays[key], gl.STREAM_DRAW);
 	}
 
 	return hexes_instance_arrays;
