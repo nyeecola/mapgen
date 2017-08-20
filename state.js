@@ -1,7 +1,7 @@
 // TODO
 //
 // Features:
-// add rivers
+// add rivers, hills
 // add font/text support
 // create loading screen
 // add lightning/shadowing
