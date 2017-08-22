@@ -65,6 +65,12 @@ function update_and_render(time)
 
 			// --- SETTLER ---
 			draw_settler(settler.x, settler.y);
+
+			// ### OVERLAY ###
+			gl.clear(gl.DEPTH_BUFFER_BIT);
+
+			// --- BORDERS ---
+			draw_region(player.tiles);
 		}
 	}
 
@@ -295,7 +301,7 @@ function main()
 		handle_texture_loaded(image, settler_model_texture, true);
 	});
 
-	// NOTE: just for testing purposes
+	// NOTE: just for settler testing purposes
 	{
 		let current_tile = hexes[settler.x * rows + settler.y];
 		let neighbors = hex_get_neighbors(current_tile);
@@ -310,11 +316,12 @@ function main()
 
 	instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
 
-	// TEST
+	// TODO: fix this, it is dumb
 	global_mesh_data = global_mesh_data.meshes[0];
 	global_mesh_data2 = global_mesh_data2.meshes[0];
 	global_mesh_data3 = global_mesh_data3.meshes[0];
 
+	// create VBOs and EBOs
 	grid_indices_buffer = gl.createBuffer();
 	grid_tex_coords_buffer = gl.createBuffer();
 	grid_shape_buffer = gl.createBuffer();
@@ -326,7 +333,10 @@ function main()
 	settler_indices_buffer = gl.createBuffer();
 	settler_shape_buffer = gl.createBuffer();
 	settler_tex_coords_buffer = gl.createBuffer();
+	// TEST
+	region_shape_buffer = gl.createBuffer();
 
+	// upload static data to GPU
 	upload_grid_static_data();
 	upload_mountain_static_data();
 	upload_forest_static_data();

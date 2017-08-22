@@ -9,7 +9,8 @@ function create_hex(x, y, grid_x, grid_y, elevation)
 		'type': null, // should call change_tile_type() to change after creation
 		'moisture': null, // should not be changed after creation (for now)
 		'elevation': null, // should not be changed after creation (for now)
-	        'seen': 0};
+	        'seen': 0,
+		'owner': null}; // should call change_tile_owner()
 }
 
 function hex_corners(x, y)
@@ -95,6 +96,15 @@ function change_hex_type(hex, type)
 	hex_types_count[hex.type] -= 1;
 	hex.type = type;
 	instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
+}
+
+function change_tile_owner(hex, owner)
+{
+	if (hex.owner === owner) return;
+
+	owner.tiles.push(hex);
+	hex.owner = owner;
+	// TODO: call bufferdata
 }
 
 function hex_distance(a, b)

@@ -67,43 +67,43 @@ function upload_grid_static_data()
 	{
 		let hex_indices = [0, 1, 2, 0, 2, 3, 0, 3, 5, 3, 4, 5];
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, grid_indices_buffer);
-		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(hex_indices), gl.STREAM_DRAW);
+		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(hex_indices), gl.STATIC_DRAW);
 	}
 
 	{
 		let hex_verts = hex_corners(0, 0);
 		gl.bindBuffer(gl.ARRAY_BUFFER, grid_shape_buffer);
-		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(hex_verts), gl.STREAM_DRAW);
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(hex_verts), gl.STATIC_DRAW);
 	}
 
 	{
 		let tex_coords = [1, 0, 0.5, -0.5, 0, 0, 0, 1, 0.5, 1.5, 1, 1];
 		gl.bindBuffer(gl.ARRAY_BUFFER, grid_tex_coords_buffer);
-		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tex_coords), gl.STREAM_DRAW);
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tex_coords), gl.STATIC_DRAW);
 	}
 }
 
 function upload_mountain_static_data()
 {
 	gl.bindBuffer(gl.ARRAY_BUFFER, mountain_shape_buffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(global_mesh_data.vertices), gl.STREAM_DRAW);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(global_mesh_data.vertices), gl.STATIC_DRAW);
 
 	let mesh_indices = [].concat.apply([], global_mesh_data.faces);
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mountain_indices_buffer);
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(mesh_indices), gl.STREAM_DRAW);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(mesh_indices), gl.STATIC_DRAW);
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, mountain_tex_coords_buffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(global_mesh_data.texturecoords[0]), gl.STREAM_DRAW);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(global_mesh_data.texturecoords[0]), gl.STATIC_DRAW);
 }
 
 function upload_forest_static_data()
 {
 	gl.bindBuffer(gl.ARRAY_BUFFER, forest_shape_buffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(global_mesh_data2.vertices), gl.STREAM_DRAW);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(global_mesh_data2.vertices), gl.STATIC_DRAW);
 
 	let mesh_indices = [].concat.apply([], global_mesh_data2.faces);
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, forest_indices_buffer);
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(mesh_indices), gl.STREAM_DRAW);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(mesh_indices), gl.STATIC_DRAW);
 }
 
 function upload_settler_static_data()
@@ -215,7 +215,7 @@ function draw_forests()
 
 	attrib_loc = gl.getAttribLocation(shader_program, 'color');
 	gl.disableVertexAttribArray(attrib_loc);
-	gl.vertexAttrib3f(attrib_loc, 1, 0, 0);
+	gl.vertexAttrib3f(attrib_loc, 0.1, 0.6, 0.1);
 	ext.instancing.vertexAttribDivisorANGLE(attrib_loc, 1);
 
 	ext.instancing.drawElementsInstancedANGLE(gl.TRIANGLES, mesh_indices.length, gl.UNSIGNED_SHORT, 0, instance_arrays_of_hexes['forest'].length/7);
@@ -223,14 +223,14 @@ function draw_forests()
 
 function draw_settler(x, y)
 {
+	let attrib_loc, uniform_loc;
+
 	// change model matrix
 	let model = mat4.create();
 	model = mat4.scale(model, model, vec3.fromValues(0.02, 0.02, 0.02));
 	model = mat4.translate(model, model, vec3.fromValues(0.0, 0.0, 0.4));
-	model_loc = gl.getUniformLocation(shader_program, 'model');
-	gl.uniformMatrix4fv(model_loc, gl.FALSE, model);
-
-	let attrib_loc;
+	uniform_loc = gl.getUniformLocation(shader_program, 'model');
+	gl.uniformMatrix4fv(uniform_loc, gl.FALSE, model);
 
 	// bind shape vbo
 	gl.bindBuffer(gl.ARRAY_BUFFER, settler_shape_buffer);
@@ -270,6 +270,9 @@ function draw_settler(x, y)
 	gl.vertexAttrib3f(attrib_loc, 1, 1, 1);
 
 	gl.drawElements(gl.TRIANGLES, mesh_indices.length, gl.UNSIGNED_SHORT, 0);
+
+	// reset model matrix transformations
+	gl.uniformMatrix4fv(uniform_loc, gl.FALSE, mat4.create());
 }
 
 function draw_grid_tiles(dt)
@@ -355,10 +358,126 @@ function draw_grid_tiles(dt)
 			uniform_loc = gl.getUniformLocation(shader_program, 'texture_enabled');
 			gl.uniform1i(uniform_loc, 0);
 
-			gl.disableVertexAttribArray(color_loc);
-			gl.vertexAttrib3f(color_loc, 0, 0, 0);
+			attrib_loc = gl.getAttribLocation(shader_program, 'color');
+			gl.disableVertexAttribArray(attrib_loc);
+			gl.vertexAttrib3f(attrib_loc, 0, 0, 0);
 			ext.instancing.drawArraysInstancedANGLE(gl.LINE_LOOP, 0, 6, instance_arrays_of_hexes[array].length/7);
 		}
+
+		// clean model modifications
+		uniform_loc = gl.getUniformLocation(shader_program, 'model');
+		gl.uniformMatrix4fv(uniform_loc, gl.FALSE, mat4.create());
+	}
+}
+
+function draw_region(region)
+{
+	let attrib_loc, uniform_loc;
+
+	let shape = [];
+
+	// TODO: check for out of bounds
+	// TODO: stop using '1' here, it should be an owner id that has some way of getting a color value
+	for (let hex of region)
+	{
+		let test_corners = hex_corners(hex.x, hex.y);
+		if (hexes[hex.grid_x * rows + hex.grid_y + 1].owner !== hex.owner)
+		{
+			shape = shape.concat([
+				test_corners[0 * 3],
+				test_corners[0 * 3 + 1],
+				0,
+				test_corners[1 * 3],
+				test_corners[1 * 3 + 1],
+				0
+			]);
+		}
+		if (hexes[(hex.grid_x - 1) * rows + hex.grid_y + 1].owner !== hex.owner)
+		{
+			shape = shape.concat([
+				test_corners[1 * 3],
+				test_corners[1 * 3 + 1],
+				0,
+				test_corners[2 * 3],
+				test_corners[2 * 3 + 1],
+				0
+			]);
+		}
+		if (hexes[(hex.grid_x - 1) * rows + hex.grid_y].owner !== hex.owner)
+		{
+			shape = shape.concat([
+				test_corners[2 * 3],
+				test_corners[2 * 3 + 1],
+				0,
+				test_corners[3 * 3],
+				test_corners[3 * 3 + 1],
+				0
+			]);
+		}
+		if (hexes[(hex.grid_x) * rows + hex.grid_y - 1].owner !== hex.owner)
+		{
+			shape = shape.concat([
+				test_corners[3 * 3],
+				test_corners[3 * 3 + 1],
+				0,
+				test_corners[4 * 3],
+				test_corners[4 * 3 + 1],
+				0
+			]);
+		}
+		if (hexes[(hex.grid_x + 1) * rows + hex.grid_y - 1].owner !== hex.owner)
+		{
+			shape = shape.concat([
+				test_corners[4 * 3],
+				test_corners[4 * 3 + 1],
+				0,
+				test_corners[5 * 3],
+				test_corners[5 * 3 + 1],
+				0
+			]);
+		}
+		if (hexes[(hex.grid_x + 1) * rows + hex.grid_y].owner !== hex.owner)
+		{
+			shape = shape.concat([
+				test_corners[5 * 3],
+				test_corners[5 * 3 + 1],
+				0,
+				test_corners[0 * 3],
+				test_corners[0 * 3 + 1],
+				0
+			]);
+		}
+	}
+
+	if (region.length)
+	{
+		// bind grid shape vbo and set attrib pointer
+		gl.bindBuffer(gl.ARRAY_BUFFER, region_shape_buffer);
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(shape), gl.STATIC_DRAW); // TODO: move
+		attrib_loc = gl.getAttribLocation(shader_program, 'position');
+		gl.enableVertexAttribArray(attrib_loc);
+		gl.vertexAttribPointer(attrib_loc, 3, gl.FLOAT, gl.FALSE, 3 * 4, 0);
+
+		// disable texture
+		uniform_loc = gl.getUniformLocation(shader_program, 'texture_enabled');
+		gl.uniform1i(uniform_loc, 0);
+		attrib_loc = gl.getAttribLocation(shader_program, 'p_tex_coord');
+		gl.disableVertexAttribArray(attrib_loc);
+
+		// set model position attrib
+		attrib_loc = gl.getAttribLocation(shader_program, 'model_position');
+		gl.disableVertexAttribArray(attrib_loc);
+		gl.vertexAttrib3f(attrib_loc, 0, 0, 0);
+
+		attrib_loc = gl.getAttribLocation(shader_program, 'outside_fow');
+		gl.disableVertexAttribArray(attrib_loc);
+		gl.vertexAttrib1f(attrib_loc, 1); // TEST
+
+		attrib_loc = gl.getAttribLocation(shader_program, 'color');
+		gl.disableVertexAttribArray(attrib_loc);
+		gl.vertexAttrib3f(attrib_loc, 0.7, 0, 0); // TEST
+
+		gl.drawArrays(gl.LINES, 0, shape.length/3);
 	}
 }
 

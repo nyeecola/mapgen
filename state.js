@@ -45,6 +45,7 @@ var forest_shape_buffer;
 var settler_indices_buffer;
 var settler_shape_buffer;
 var settler_tex_coords_buffer;
+var region_shape_buffer;
 
 // -- semi-opengl state
 // TODO: create an object to hold textures/meshes
@@ -67,8 +68,10 @@ var sea_level = 0;
 var max_elevations = 3;
 var grid_mode = false;
 var offset_tex_animation = 0;
-var settler = {'x': 30, 'y': 30};
 
+// -- game state
+var settler = {'x': 30, 'y': 30};
+var player = {'tiles': []};
 
 // variables regarding instance arrays of hexes
 // NOTE: in progress
@@ -249,6 +252,8 @@ document.addEventListener("mouseup", function(e){
 
 	if (e.which == 3 && clicked_tile)
 	{
+		// toggle seen state
+		/*
 		let neighbors = hex_get_neighbors(clicked_tile);
 
 		if (clicked_tile.seen)
@@ -268,6 +273,16 @@ document.addEventListener("mouseup", function(e){
 			}
 		}
 		instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
+		*/
+
+		// create area of owned tiles
+		let neighbors = hex_get_neighbors(clicked_tile);
+
+		change_tile_owner(clicked_tile, player);
+		for (let hex of neighbors)
+		{
+			change_tile_owner(hex, player);
+		}
 	}
 });
 
