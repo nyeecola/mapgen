@@ -21,25 +21,32 @@
 // Performance:
 // improve ray to hexagon intersection test
 
-// constants
+// -- constants
 var radius = 0.1;
 var columns = 140;
 var rows = 90;
 
-// almost never changing state
+// -- almost never changing state
 var gl;
 var canvas;
 
-// opengl state
-var ext;
+// -- opengl state
+var ext = {};
 var shader_program;
-var array_buffer;
-var indices_buffer;
-var tex_coords_buffer;
 var instance_buffers = {};
+var grid_indices_buffer;
+var grid_shape_buffer;
+var grid_tex_coords_buffer;
+var mountain_indices_buffer;
+var mountain_shape_buffer;
+var mountain_tex_coords_buffer;
+var forest_indices_buffer;
+var forest_shape_buffer;
+var settler_indices_buffer;
+var settler_shape_buffer;
+var settler_tex_coords_buffer;
 
-// engine state
-
+// -- semi-opengl state
 // TODO: create an object to hold textures/meshes
 var mountain_model_texture;
 var tree_model_texture;
@@ -48,7 +55,11 @@ var global_mesh_data;
 var global_mesh_data2;
 var global_mesh_data3;
 
+// -- engine state
 var hexes;
+var instance_arrays_of_hexes;
+var hex_types_count = {};
+var hex_types_current = {};
 var last_time = 0;
 var key_state = [];
 var camera;
@@ -58,11 +69,8 @@ var grid_mode = false;
 var offset_tex_animation = 0;
 var settler = {'x': 30, 'y': 30};
 
-// variables regarding instance arrays of hexes
-var instance_arrays_of_hexes;
-var hex_types_count = {};
-var hex_types_current = {};
 
+// variables regarding instance arrays of hexes
 // NOTE: in progress
 var hex_types = {
 	'grassland': [0.3, 0.9, 0.3, null],
@@ -105,6 +113,15 @@ window.onkeydown = function(e) {
 	{
 		let w = window.innerWidth;
 		let h = window.innerHeight;
+		canvas.width = w;
+		canvas.height = h;
+		gl.viewport(0, 0, w, h);
+	}
+
+	if (e.key == '-')
+	{
+		let w = canvas.width * 0.8;
+		let h = canvas.height * 0.8;
 		canvas.width = w;
 		canvas.height = h;
 		gl.viewport(0, 0, w, h);
