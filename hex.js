@@ -13,8 +13,10 @@ function create_hex(x, y, grid_x, grid_y, elevation)
 		'owner': null}; // should call change_tile_owner()
 }
 
-function hex_corners(x, y)
+function hex_corners(x, y, r)
 {
+	r = r || radius;
+
 	var angle_deg;
 	var angle_rad;
 
@@ -23,7 +25,7 @@ function hex_corners(x, y)
 	{
 		angle_deg = 60 * i   + 30;
 		angle_rad = Math.PI / 180 * angle_deg;
-		hex_verts = hex_verts.concat([x + radius * Math.cos(angle_rad), y + radius * Math.sin(angle_rad), 0]);
+		hex_verts = hex_verts.concat([x + r * Math.cos(angle_rad), y + r * Math.sin(angle_rad), 0]);
 	}
 
 	return hex_verts;

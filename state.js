@@ -71,7 +71,8 @@ var offset_tex_animation = 0;
 
 // -- game state
 var settler = {'x': 30, 'y': 30};
-var player = {'tiles': []};
+var player = {'color': {'r': 0, 'g': 1, 'b': 0}, 'tiles': []};
+var enemy = {'color': {'r': 1, 'g': 0, 'b': 0}, 'tiles': []};
 
 // variables regarding instance arrays of hexes
 // NOTE: in progress

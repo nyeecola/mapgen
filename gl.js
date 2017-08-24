@@ -370,7 +370,7 @@ function draw_grid_tiles(dt)
 	}
 }
 
-function draw_region(region)
+function draw_region(region, color)
 {
 	let attrib_loc, uniform_loc;
 
@@ -380,70 +380,145 @@ function draw_region(region)
 	// TODO: stop using '1' here, it should be an owner id that has some way of getting a color value
 	for (let hex of region)
 	{
-		let test_corners = hex_corners(hex.x, hex.y);
+		// TEST
+		let line_width = 0.015;
+		let outer_corners = hex_corners(hex.x, hex.y);
+		let inner_corners = hex_corners(hex.x, hex.y, radius - line_width);
 		if (hexes[hex.grid_x * rows + hex.grid_y + 1].owner !== hex.owner)
 		{
 			shape = shape.concat([
-				test_corners[0 * 3],
-				test_corners[0 * 3 + 1],
+				outer_corners[0 * 3 + 0],
+				outer_corners[0 * 3 + 1],
 				0,
-				test_corners[1 * 3],
-				test_corners[1 * 3 + 1],
+				outer_corners[1 * 3 + 0],
+				outer_corners[1 * 3 + 1],
+				0,
+				inner_corners[0 * 3 + 0],
+				inner_corners[0 * 3 + 1],
+				0,
+				inner_corners[0 * 3 + 0],
+				inner_corners[0 * 3 + 1],
+				0,
+				outer_corners[1 * 3 + 0],
+				outer_corners[1 * 3 + 1],
+				0,
+				inner_corners[1 * 3 + 0],
+				inner_corners[1 * 3 + 1],
 				0
 			]);
 		}
 		if (hexes[(hex.grid_x - 1) * rows + hex.grid_y + 1].owner !== hex.owner)
 		{
 			shape = shape.concat([
-				test_corners[1 * 3],
-				test_corners[1 * 3 + 1],
+				outer_corners[1 * 3 + 0],
+				outer_corners[1 * 3 + 1],
 				0,
-				test_corners[2 * 3],
-				test_corners[2 * 3 + 1],
+				outer_corners[2 * 3 + 0],
+				outer_corners[2 * 3 + 1],
+				0,
+				inner_corners[1 * 3 + 0],
+				inner_corners[1 * 3 + 1],
+				0,
+				inner_corners[1 * 3 + 0],
+				inner_corners[1 * 3 + 1],
+				0,
+				outer_corners[2 * 3 + 0],
+				outer_corners[2 * 3 + 1],
+				0,
+				inner_corners[2 * 3 + 0],
+				inner_corners[2 * 3 + 1],
 				0
 			]);
 		}
 		if (hexes[(hex.grid_x - 1) * rows + hex.grid_y].owner !== hex.owner)
 		{
 			shape = shape.concat([
-				test_corners[2 * 3],
-				test_corners[2 * 3 + 1],
+				outer_corners[2 * 3 + 0],
+				outer_corners[2 * 3 + 1],
 				0,
-				test_corners[3 * 3],
-				test_corners[3 * 3 + 1],
+				outer_corners[3 * 3 + 0],
+				outer_corners[3 * 3 + 1],
+				0,
+				inner_corners[2 * 3 + 0],
+				inner_corners[2 * 3 + 1],
+				0,
+				inner_corners[2 * 3 + 0],
+				inner_corners[2 * 3 + 1],
+				0,
+				outer_corners[3 * 3 + 0],
+				outer_corners[3 * 3 + 1],
+				0,
+				inner_corners[3 * 3 + 0],
+				inner_corners[3 * 3 + 1],
 				0
 			]);
 		}
 		if (hexes[(hex.grid_x) * rows + hex.grid_y - 1].owner !== hex.owner)
 		{
 			shape = shape.concat([
-				test_corners[3 * 3],
-				test_corners[3 * 3 + 1],
+				outer_corners[3 * 3 + 0],
+				outer_corners[3 * 3 + 1],
 				0,
-				test_corners[4 * 3],
-				test_corners[4 * 3 + 1],
+				outer_corners[4 * 3 + 0],
+				outer_corners[4 * 3 + 1],
+				0,
+				inner_corners[3 * 3 + 0],
+				inner_corners[3 * 3 + 1],
+				0,
+				inner_corners[3 * 3 + 0],
+				inner_corners[3 * 3 + 1],
+				0,
+				outer_corners[4 * 3 + 0],
+				outer_corners[4 * 3 + 1],
+				0,
+				inner_corners[4 * 3 + 0],
+				inner_corners[4 * 3 + 1],
 				0
 			]);
 		}
 		if (hexes[(hex.grid_x + 1) * rows + hex.grid_y - 1].owner !== hex.owner)
 		{
 			shape = shape.concat([
-				test_corners[4 * 3],
-				test_corners[4 * 3 + 1],
+				outer_corners[4 * 3 + 0],
+				outer_corners[4 * 3 + 1],
 				0,
-				test_corners[5 * 3],
-				test_corners[5 * 3 + 1],
+				outer_corners[5 * 3 + 0],
+				outer_corners[5 * 3 + 1],
+				0,
+				inner_corners[4 * 3 + 0],
+				inner_corners[4 * 3 + 1],
+				0,
+				inner_corners[4 * 3 + 0],
+				inner_corners[4 * 3 + 1],
+				0,
+				outer_corners[5 * 3 + 0],
+				outer_corners[5 * 3 + 1],
+				0,
+				inner_corners[5 * 3 + 0],
+				inner_corners[5 * 3 + 1],
 				0
 			]);
 		}
 		if (hexes[(hex.grid_x + 1) * rows + hex.grid_y].owner !== hex.owner)
 		{
 			shape = shape.concat([
-				test_corners[5 * 3],
-				test_corners[5 * 3 + 1],
+				outer_corners[5 * 3 + 0],
+				outer_corners[5 * 3 + 1],
 				0,
-				test_corners[0 * 3],
-				test_corners[0 * 3 + 1],
+				outer_corners[0 * 3 + 0],
+				outer_corners[0 * 3 + 1],
+				0,
+				inner_corners[5 * 3 + 0],
+				inner_corners[5 * 3 + 1],
+				0,
+				inner_corners[5 * 3 + 0],
+				inner_corners[5 * 3 + 1],
+				0,
+				outer_corners[0 * 3 + 0],
+				outer_corners[0 * 3 + 1],
+				0,
+				inner_corners[0 * 3 + 0],
+				inner_corners[0 * 3 + 1],
 				0
 			]);
 		}
@@ -475,9 +550,9 @@ function draw_region(region)
 
 		attrib_loc = gl.getAttribLocation(shader_program, 'color');
 		gl.disableVertexAttribArray(attrib_loc);
-		gl.vertexAttrib3f(attrib_loc, 0.7, 0, 0); // TEST
+		gl.vertexAttrib3f(attrib_loc, color.r, color.g, color.b);
 
-		gl.drawArrays(gl.LINES, 0, shape.length/3);
+		gl.drawArrays(gl.TRIANGLES, 0, shape.length/3);
 	}
 }
 

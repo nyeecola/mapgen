@@ -70,7 +70,9 @@ function update_and_render(time)
 			gl.clear(gl.DEPTH_BUFFER_BIT);
 
 			// --- BORDERS ---
-			draw_region(player.tiles);
+			// TEST
+			draw_region(player.tiles, player.color);
+			draw_region(enemy.tiles, enemy.color);
 		}
 	}
 
@@ -341,6 +343,16 @@ function main()
 	upload_mountain_static_data();
 	upload_forest_static_data();
 	upload_settler_static_data();
+
+	// TEST
+	change_tile_owner(hexes[20 * rows + 20], enemy);
+	change_tile_owner(hexes[21 * rows + 20], enemy);
+	change_tile_owner(hexes[22 * rows + 20], enemy);
+	change_tile_owner(hexes[23 * rows + 20], enemy);
+	change_tile_owner(hexes[20 * rows + 21], enemy);
+	change_tile_owner(hexes[21 * rows + 21], enemy);
+	change_tile_owner(hexes[22 * rows + 21], enemy);
+	change_tile_owner(hexes[23 * rows + 21], enemy);
 
 	requestAnimationFrame(update_and_render);
 }
