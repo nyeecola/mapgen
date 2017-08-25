@@ -272,6 +272,7 @@ function draw_settler(x, y)
 	gl.drawElements(gl.TRIANGLES, mesh_indices.length, gl.UNSIGNED_SHORT, 0);
 
 	// reset model matrix transformations
+	uniform_loc = gl.getUniformLocation(shader_program, 'model');
 	gl.uniformMatrix4fv(uniform_loc, gl.FALSE, mat4.create());
 }
 
@@ -345,7 +346,31 @@ function draw_grid_tiles(dt)
 
 
 		// draw tiles
+		let model = mat4.create();
+		let hex_width = Math.sqrt(3)/2 * radius;
+		let map_width = 2 * columns * hex_width;
+		model = mat4.translate(model, model, vec3.fromValues(test_loc * map_width, 0, 0));
+		uniform_loc = gl.getUniformLocation(shader_program, 'model');
+		gl.uniformMatrix4fv(uniform_loc, gl.FALSE, model);
 		ext.instancing.drawElementsInstancedANGLE(gl.TRIANGLES, 4 * 3, gl.UNSIGNED_SHORT, 0, instance_arrays_of_hexes[array].length/7);
+
+		// TEST
+		if (!test_dir)
+		{
+			model = mat4.create();
+			model = mat4.translate(model, model, vec3.fromValues((test_loc - 1) * map_width, 0, 0));
+			uniform_loc = gl.getUniformLocation(shader_program, 'model');
+			gl.uniformMatrix4fv(uniform_loc, gl.FALSE, model);
+			ext.instancing.drawElementsInstancedANGLE(gl.TRIANGLES, 4 * 3, gl.UNSIGNED_SHORT, 0, instance_arrays_of_hexes[array].length/7);
+		}
+		else
+		{
+			model = mat4.create();
+			model = mat4.translate(model, model, vec3.fromValues((test_loc + 1) * map_width, 0, 0));
+			uniform_loc = gl.getUniformLocation(shader_program, 'model');
+			gl.uniformMatrix4fv(uniform_loc, gl.FALSE, model);
+			ext.instancing.drawElementsInstancedANGLE(gl.TRIANGLES, 4 * 3, gl.UNSIGNED_SHORT, 0, instance_arrays_of_hexes[array].length/7);
+		}
 
 		// draw grid outline if grid_mode is enabled
 		if (grid_mode)
@@ -370,17 +395,20 @@ function draw_grid_tiles(dt)
 	}
 }
 
+// TODO: maybe stop uploading buffer data every single frame
 function draw_region(region, color)
 {
 	let attrib_loc, uniform_loc;
 
+	// reset model matrix transformations
+	uniform_loc = gl.getUniformLocation(shader_program, 'model');
+	gl.uniformMatrix4fv(uniform_loc, gl.FALSE, mat4.create());
+
 	let shape = [];
 
 	// TODO: check for out of bounds
-	// TODO: stop using '1' here, it should be an owner id that has some way of getting a color value
 	for (let hex of region)
 	{
-		// TEST
 		let line_width = 0.015;
 		let outer_corners = hex_corners(hex.x, hex.y);
 		let inner_corners = hex_corners(hex.x, hex.y, radius - line_width);

@@ -1,15 +1,39 @@
+let test_loc = 0;
+let test_dir = 0;
+
 function update_and_render(time)
 {
+	let dt = time - last_time;
+	last_time = time;
+	if (dt < 0) dt = 0.0000001;
+	//console.log(dt);
+
 	// update
 	{
-		dt = time - last_time;
-		last_time = time;
-		if (dt < 0) dt = 0.0000001;
-
 		if ('ArrowRight' in key_state && key_state['ArrowRight'])
+		{
 			camera.x -= dt * camera.speed;
+
+			// TEST
+			let hex_width = Math.sqrt(3)/2 * radius;
+			let map_width = 2 * columns * hex_width;
+			test_loc = parseInt((camera.x * -1) / map_width);
+			if (camera.x * -1 <= 0) test_loc -= 1;
+			test_dir = parseInt((camera.x * -1) / (map_width / 2)) % 2;
+			if (camera.x * -1 <= 0) test_dir = (test_dir + 1) % 2;
+		}
 		if ('ArrowLeft' in key_state && key_state['ArrowLeft'])
+		{
 			camera.x += dt * camera.speed;
+
+			// TEST
+			let hex_width = Math.sqrt(3)/2 * radius;
+			let map_width = 2 * columns * hex_width;
+			test_loc = parseInt((camera.x * -1) / map_width);
+			if (camera.x * -1 <= 0) test_loc -= 1;
+			test_dir = parseInt((camera.x * -1) / (map_width / 2)) % 2;
+			if (camera.x * -1 <= 0) test_dir = (test_dir + 1) % 2;
+		}
 		if ('ArrowUp' in key_state && key_state['ArrowUp'])
 			camera.y -= dt * camera.speed;
 		if ('ArrowDown' in key_state && key_state['ArrowDown'])
@@ -64,7 +88,13 @@ function update_and_render(time)
 			draw_forests();
 
 			// --- SETTLER ---
-			draw_settler(settler.x, settler.y);
+			for (let unit of player.units)
+			{
+				if (unit.name === 'settler')
+				{
+					draw_settler(unit.x, unit.y);
+				}
+			}
 
 			// ### OVERLAY ###
 			gl.clear(gl.DEPTH_BUFFER_BIT);
@@ -303,19 +333,6 @@ function main()
 		handle_texture_loaded(image, settler_model_texture, true);
 	});
 
-	// NOTE: just for settler testing purposes
-	{
-		let current_tile = hexes[settler.x * rows + settler.y];
-		let neighbors = hex_get_neighbors(current_tile);
-
-		current_tile.seen = 1;
-		for (let hex of neighbors)
-		{
-			hex.seen = 1;
-		}
-		instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
-	}
-
 	instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
 
 	// TODO: fix this, it is dumb
@@ -345,6 +362,9 @@ function main()
 	upload_settler_static_data();
 
 	// TEST
+	create_unit(player, 'settler', 40, 40);
+	create_unit(player, 'settler', 35, 40);
+	selected_unit = player.units[0];
 	change_tile_owner(hexes[20 * rows + 20], enemy);
 	change_tile_owner(hexes[21 * rows + 20], enemy);
 	change_tile_owner(hexes[22 * rows + 20], enemy);

@@ -50,12 +50,15 @@
 
   void main(void)
   {
+    // TEST
+    //vec3 light_pos = vec3(12.0, 10.0, 0.0);
     vec4 final_position = vec4(model_position.xyz, 1.0) + model * vec4(position.xyz, 1.0);
     gl_Position = projection * view * vec4(final_position.xyz, 1.0);
     output_color = color;
     if (outside_fow < 0.5)
     {
       output_color_multiplier = 0.5;
+      //output_color_multiplier = 1.0 / (1.0 + pow(distance(light_pos, final_position.xyz), 2.0));
     }
     else
     {
@@ -69,6 +72,7 @@
 <canvas id="canvas">
 
 <script src="state.js"></script>
+<script src="units.js"></script>
 <script src="perlin.js"></script>
 <script src="gl.js"></script>
 <script src="hex.js"></script>

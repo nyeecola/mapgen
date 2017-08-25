@@ -1,6 +1,8 @@
 // TODO
 //
 // Features:
+// add tile/building/unit selection
+// add unit movement with mouse
 // add rivers, hills
 // add font/text support
 // create loading screen
@@ -22,61 +24,61 @@
 // improve ray to hexagon intersection test
 
 // -- constants
-var radius = 0.1;
-var columns = 140;
-var rows = 90;
+let radius = 0.1;
+let columns = 140;
+let rows = 90;
 
 // -- almost never changing state
-var gl;
-var canvas;
+let gl;
+let canvas;
 
 // -- opengl state
-var ext = {};
-var shader_program;
-var instance_buffers = {};
-var grid_indices_buffer;
-var grid_shape_buffer;
-var grid_tex_coords_buffer;
-var mountain_indices_buffer;
-var mountain_shape_buffer;
-var mountain_tex_coords_buffer;
-var forest_indices_buffer;
-var forest_shape_buffer;
-var settler_indices_buffer;
-var settler_shape_buffer;
-var settler_tex_coords_buffer;
-var region_shape_buffer;
+let ext = {};
+let shader_program;
+let instance_buffers = {};
+let grid_indices_buffer;
+let grid_shape_buffer;
+let grid_tex_coords_buffer;
+let mountain_indices_buffer;
+let mountain_shape_buffer;
+let mountain_tex_coords_buffer;
+let forest_indices_buffer;
+let forest_shape_buffer;
+let settler_indices_buffer;
+let settler_shape_buffer;
+let settler_tex_coords_buffer;
+let region_shape_buffer;
 
 // -- semi-opengl state
 // TODO: create an object to hold textures/meshes
-var mountain_model_texture;
-var tree_model_texture;
-var settler_model_texture;
-var global_mesh_data;
-var global_mesh_data2;
-var global_mesh_data3;
+let mountain_model_texture;
+let tree_model_texture;
+let settler_model_texture;
+let global_mesh_data;
+let global_mesh_data2;
+let global_mesh_data3;
 
 // -- engine state
-var hexes;
-var instance_arrays_of_hexes;
-var hex_types_count = {};
-var hex_types_current = {};
-var last_time = 0;
-var key_state = [];
-var camera;
-var sea_level = 0;
-var max_elevations = 3;
-var grid_mode = false;
-var offset_tex_animation = 0;
+let hexes;
+let instance_arrays_of_hexes;
+let hex_types_count = {};
+let hex_types_current = {};
+let last_time = 0;
+let key_state = [];
+let camera;
+let sea_level = 0;
+let max_elevations = 3;
+let grid_mode = false;
+let offset_tex_animation = 0;
 
 // -- game state
-var settler = {'x': 30, 'y': 30};
-var player = {'color': {'r': 0, 'g': 1, 'b': 0}, 'tiles': []};
-var enemy = {'color': {'r': 1, 'g': 0, 'b': 0}, 'tiles': []};
+let selected_unit = null;
+let player = {'color': {'r': 0, 'g': 1, 'b': 0}, 'tiles': [], 'units': []};
+let enemy = {'color': {'r': 1, 'g': 0, 'b': 0}, 'tiles': []};
 
 // variables regarding instance arrays of hexes
 // NOTE: in progress
-var hex_types = {
+let hex_types = {
 	'grassland': [0.3, 0.9, 0.3, null],
 	'forest': [0.0, 0.7, 0.0, null],
 	'desert': [1, 1, 0.6, null],
@@ -93,9 +95,9 @@ window.onkeyup = function(e) {
 window.onkeydown = function(e) {
 	key_state[e.key]=true;
 
-	if (e.key == 'g') grid_mode = !grid_mode;
+	if (e.key === 'g') grid_mode = !grid_mode;
 
-	if (e.key == '1')
+	if (e.key === '1')
 	{
 		let w = window.innerWidth / 2;
 		let h = window.innerHeight / 2;
@@ -104,7 +106,7 @@ window.onkeydown = function(e) {
 		gl.viewport(0, 0, w, h);
 	}
 
-	if (e.key == '2')
+	if (e.key === '2')
 	{
 		let w = window.innerWidth * 0.67;
 		let h = window.innerHeight * 0.67;
@@ -113,7 +115,7 @@ window.onkeydown = function(e) {
 		gl.viewport(0, 0, w, h);
 	}
 
-	if (e.key == '3')
+	if (e.key === '3')
 	{
 		let w = window.innerWidth;
 		let h = window.innerHeight;
@@ -122,7 +124,7 @@ window.onkeydown = function(e) {
 		gl.viewport(0, 0, w, h);
 	}
 
-	if (e.key == '-')
+	if (e.key === '-')
 	{
 		let w = canvas.width * 0.8;
 		let h = canvas.height * 0.8;
@@ -131,56 +133,89 @@ window.onkeydown = function(e) {
 		gl.viewport(0, 0, w, h);
 	}
 
-	// test settler movement
+	// TEST
+	if (e.key === '.')
+	{
+		if (!selected_unit && player.units.length)
+		{
+			selected_unit = player.units[0];
+		}
+		else
+		{
+			selected_unit = player.units[(player.units.indexOf(selected_unit) + 1) % player.units.length];
+		}
+	}
+
+	// test-only unit movement
 	// TODO: check boundaries of map/land
-	let moved = false;
-	if (e.key == 'w' || e.key == 'a' || e.key == 's' || e.key == 'd')
+	if (selected_unit !== null)
 	{
-		let current_tile = hexes[settler.x * rows + settler.y];
-		let neighbors = hex_get_neighbors(current_tile);
-
-		current_tile.seen = 0;
-		for (let hex of neighbors)
+		let moved = false;
+		if (e.key === 'w' || e.key === 'a' || e.key === 's' || e.key === 'd')
 		{
-			hex.seen = 0;
+			let current_tile = hexes[selected_unit.x * rows + selected_unit.y];
+			let neighbors = hex_get_neighbors(current_tile);
+
+			current_tile.seen -= 1;
+			for (let hex of neighbors)
+			{
+				hex.seen -= 1;
+			}
 		}
-	}
 
-	if (e.key == 'w')
-	{
-		settler.y += 1;
-		moved = true;
-	}
-
-	if (e.key == 'a')
-	{
-		settler.x -= 1;
-		moved = true;
-	}
-
-	if (e.key == 's')
-	{
-		settler.y -= 1;
-		moved = true;
-	}
-
-	if (e.key == 'd')
-	{
-		settler.x += 1;
-		moved = true;
-	}
-
-	if (moved == true)
-	{
-		let current_tile = hexes[settler.x * rows + settler.y];
-		let neighbors = hex_get_neighbors(current_tile);
-
-		current_tile.seen = 1;
-		for (let hex of neighbors)
+		if (e.key === 'w')
 		{
-			hex.seen = 1;
+			selected_unit.y += 1;
+			moved = true;
 		}
-		instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
+
+		if (e.key === 'a')
+		{
+			selected_unit.x -= 1;
+			moved = true;
+		}
+
+		if (e.key === 's')
+		{
+			selected_unit.y -= 1;
+			moved = true;
+		}
+
+		if (e.key === 'd')
+		{
+			selected_unit.x += 1;
+			moved = true;
+		}
+
+		if (e.key === 'b')
+		{
+			let current_tile = hexes[selected_unit.x * rows + selected_unit.y];
+			let neighbors = hex_get_neighbors(current_tile);
+
+			// create area of owned tiles
+			// NOTE: hardcoded owner as player for now
+			change_tile_owner(current_tile, player);
+			for (let hex of neighbors)
+			{
+				change_tile_owner(hex, player);
+			}
+
+			destroy_unit(selected_unit);
+			selected_unit = null;
+		}
+
+		if (moved === true)
+		{
+			let current_tile = hexes[selected_unit.x * rows + selected_unit.y];
+			let neighbors = hex_get_neighbors(current_tile);
+
+			current_tile.seen += 1;
+			for (let hex of neighbors)
+			{
+				hex.seen += 1;
+			}
+			instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
+		}
 	}
 }
 
