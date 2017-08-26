@@ -4,6 +4,7 @@
 // add tile/building/unit selection
 // add unit selection and movement with mouse
 // introduce turns
+// interpolate unit movement between tiles
 // add rivers, hills
 // add font/text support
 // create loading screen

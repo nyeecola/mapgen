@@ -107,6 +107,7 @@ function update_and_render(time)
 					draw_settler(unit.x, unit.y);
 				}
 			}
+			
 			for (let unit of enemy.units)
 			{
 				// don't draw unseen enemy units

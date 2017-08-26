@@ -556,7 +556,7 @@ function draw_region(region, color)
 		}
 	}
 
-	if (region.length)
+	if (shape.length)
 	{
 		// bind grid shape vbo and set attrib pointer
 		gl.bindBuffer(gl.ARRAY_BUFFER, region_shape_buffer);
