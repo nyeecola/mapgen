@@ -1,3 +1,4 @@
+// NOTE: wrap-around test implementation
 let test_loc = 0;
 let test_dir = 0;
 
@@ -11,9 +12,9 @@ function update_and_render(time)
 	// update
 	{
 		AI_timer += dt;
-		if (AI_timer > 4000)
+		if (AI_timer > 2000)
 		{
-			AI_timer -= 4000;
+			AI_timer -= 2000;
 			AI_do_action(enemy);
 		}
 

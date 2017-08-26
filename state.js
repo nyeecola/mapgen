@@ -173,18 +173,7 @@ window.onkeydown = function(e) {
 
 		if (e.key === 'b')
 		{
-			let current_tile = hexes[selected_unit.x * rows + selected_unit.y];
-			let neighbors = hex_get_neighbors(current_tile);
-
-			// create area of owned tiles
-			// NOTE: hardcoded owner as player for now
-			change_tile_owner(current_tile, player);
-			for (let hex of neighbors)
-			{
-				change_tile_owner(hex, player);
-			}
-
-			destroy_unit(selected_unit);
+			unit_build(selected_unit);
 			selected_unit = null;
 		}
 	}

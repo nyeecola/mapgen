@@ -55,8 +55,9 @@ function move_unit(unit, x, y)
 		hex.seen -= 1;
 	}
 
-	unit.x = x;
-	unit.y = y;
+	// TODO: maybe also return an error code on out of bounds?
+	if (x >= 0 && x < columns) unit.x = x;
+	if (y >= 0 && y < rows) unit.y = y;
 
 	current_tile = hexes[unit.x * rows + unit.y];
 	neighbors = hex_get_neighbors(current_tile);
@@ -68,4 +69,26 @@ function move_unit(unit, x, y)
 	}
 
 	instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
+}
+
+// TODO: maybe add a parameter to choose what to build if some unit can build more than one building
+// TODO: maybe add a parameter to specify if an unit can build something without getting destroyed
+function unit_build(unit)
+{
+	// TODO: maybe return an error code if a unit that cannot build anything calls unit_build()
+	if (unit.name === 'settler')
+	{
+		let current_tile = hexes[unit.x * rows + unit.y];
+		let neighbors = hex_get_neighbors(current_tile);
+
+		// create area of owned tiles
+		change_tile_owner(current_tile, unit.owner);
+		for (let hex of neighbors)
+		{
+			change_tile_owner(hex, unit.owner);
+		}
+
+		// destroy unit
+		destroy_unit(unit);
+	}
 }
