@@ -111,6 +111,10 @@ function change_tile_owner(hex, owner)
 {
 	if (hex.owner === owner) return;
 
+	if (hex.owner)
+	{
+		hex.owner.tiles.splice(hex.owner.tiles.indexOf(hex), 1);
+	}
 	owner.tiles.push(hex);
 	hex.owner = owner;
 	// TODO: call bufferdata
