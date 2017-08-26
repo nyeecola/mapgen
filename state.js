@@ -24,6 +24,7 @@
 //
 // Performance:
 // improve ray to hexagon intersection test
+// don't draw undiscovered tiles when on not on full_map_revealed mode
 
 // -- constants
 let radius = 0.1;

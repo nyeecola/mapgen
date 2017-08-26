@@ -12,9 +12,9 @@ function update_and_render(time)
 	// update
 	{
 		AI_timer += dt;
-		if (AI_timer > 2000)
+		if (AI_timer > 500)
 		{
-			AI_timer -= 2000;
+			AI_timer -= 500;
 			AI_do_action(enemy);
 		}
 
@@ -99,7 +99,7 @@ function update_and_render(time)
 			// --- FORESTS --- 
 			draw_forests();
 
-			// --- SETTLER ---
+			// --- UNITS ---
 			for (let unit of player.units)
 			{
 				if (unit.name === 'settler')
@@ -109,6 +109,10 @@ function update_and_render(time)
 			}
 			for (let unit of enemy.units)
 			{
+				// don't draw unseen enemy units
+				if (!hexes[unit.x * rows + unit.y].seen.hasOwnProperty(player.id) ||
+				    hexes[unit.x * rows + unit.y].seen[player.id] < 1) continue;
+
 				if (unit.name === 'settler')
 				{
 					draw_settler(unit.x, unit.y);
@@ -386,16 +390,10 @@ function main()
 	selected_unit = player.units[0];
 	create_unit(enemy, 'settler', 45, 42);
 	create_unit(enemy, 'settler', 42, 42);
-	create_unit(enemy, 'settler', 40, 42);
-	change_tile_owner(hexes[20 * rows + 20], enemy);
-	change_tile_owner(hexes[21 * rows + 20], enemy);
-	change_tile_owner(hexes[22 * rows + 20], enemy);
-	change_tile_owner(hexes[23 * rows + 20], enemy);
-	change_tile_owner(hexes[20 * rows + 21], enemy);
-	change_tile_owner(hexes[21 * rows + 21], enemy);
-	change_tile_owner(hexes[22 * rows + 21], enemy);
-	change_tile_owner(hexes[23 * rows + 21], enemy);
-
+	create_unit(enemy, 'settler', 45, 45);
+	create_unit(enemy, 'settler', 45, 44);
+	create_unit(enemy, 'settler', 42, 43);
+	create_unit(enemy, 'settler', 47, 42);
 	requestAnimationFrame(update_and_render);
 }
 

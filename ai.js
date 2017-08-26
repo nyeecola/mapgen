@@ -6,7 +6,7 @@ function AI_do_action()
 {
 	for (let unit of enemy.units)
 	{
-		let factor = Math.floor(Math.random() * 5);
+		let factor = Math.floor(Math.random() * 20);
 
 		if (factor === 0) move_unit(unit, unit.x - 1, unit.y);
 		if (factor === 1) move_unit(unit, unit.x + 1, unit.y);

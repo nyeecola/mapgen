@@ -409,6 +409,10 @@ function draw_region(region, color)
 	// TODO: check for out of bounds
 	for (let hex of region)
 	{
+		// don't draw borders on undiscovered tiles
+		// TODO: don't update borders on discovered but not currently seen tiles
+		if (!hex.seen.hasOwnProperty(player.id) || hex.seen[player.id] < 0) continue;
+
 		let line_width = 0.015;
 		let outer_corners = hex_corners(hex.x, hex.y);
 		let inner_corners = hex_corners(hex.x, hex.y, radius - line_width);
