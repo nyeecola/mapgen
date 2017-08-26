@@ -24,10 +24,10 @@ function create_unit(owner, unit_name, x, y)
 				let current_tile = hexes[unit.x * rows + unit.y];
 				let neighbors = hex_get_neighbors(current_tile);
 
-				current_tile.seen = 1;
+				current_tile.seen += 1;
 				for (let hex of neighbors)
 				{
-					hex.seen = 1;
+					hex.seen += 1;
 				}
 				instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
 			}

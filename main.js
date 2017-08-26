@@ -381,6 +381,8 @@ function main()
 	create_unit(player, 'settler', 35, 40);
 	selected_unit = player.units[0];
 	create_unit(enemy, 'settler', 45, 42);
+	create_unit(enemy, 'settler', 42, 42);
+	create_unit(enemy, 'settler', 40, 42);
 	change_tile_owner(hexes[20 * rows + 20], enemy);
 	change_tile_owner(hexes[21 * rows + 20], enemy);
 	change_tile_owner(hexes[22 * rows + 20], enemy);
