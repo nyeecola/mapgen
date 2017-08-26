@@ -43,6 +43,7 @@
   uniform mat4 view;
   uniform mat4 projection;
   uniform float tex_coord_offset;
+  uniform bool full_map_revealed;
 
   varying vec3 output_color;
   varying float output_color_multiplier;
@@ -55,14 +56,18 @@
     vec4 final_position = vec4(model_position.xyz, 1.0) + model * vec4(position.xyz, 1.0);
     gl_Position = projection * view * vec4(final_position.xyz, 1.0);
     output_color = color;
-    if (outside_fow < 0.5)
+    if (outside_fow < -0.5)
+    {
+      if (full_map_revealed == true) output_color_multiplier = 0.5;
+      else output_color_multiplier = 0.0;
+    }
+    else if (outside_fow < 0.5)
     {
       output_color_multiplier = 0.5;
-      //output_color_multiplier = 1.0 / (1.0 + pow(distance(light_pos, final_position.xyz), 2.0));
     }
     else
     {
-      output_color_multiplier = 1.0;// / (1.0 + 20000.60*dist_from_light + 0.60*dist_from_light*dist_from_light);
+      output_color_multiplier = 1.0;
     }
     tex_coord = vec2(p_tex_coord.x - tex_coord_offset, p_tex_coord.y + tex_coord_offset);
   }

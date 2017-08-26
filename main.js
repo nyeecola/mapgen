@@ -86,6 +86,10 @@ function update_and_render(time)
 		}
 		else 
 		{
+			let uniform_loc = gl.getUniformLocation(shader_program, 'full_map_revealed');
+			if (full_map_revealed) gl.uniform1i(uniform_loc, 1);
+			else gl.uniform1i(uniform_loc, 0);
+
 			// --- GRID TILES---
 			draw_grid_tiles(dt);
 

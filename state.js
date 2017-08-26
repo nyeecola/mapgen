@@ -71,12 +71,13 @@ let camera;
 let sea_level = 0;
 let max_elevations = 3;
 let grid_mode = false;
+let full_map_revealed = false;
 let offset_tex_animation = 0;
 
 // -- game state
 let selected_unit = null;
-let player = {'color': {'r': 0, 'g': 1, 'b': 0}, 'tiles': [], 'units': []};
-let enemy = {'color': {'r': 1, 'g': 0, 'b': 0}, 'tiles': [], 'units': []};
+let player = {'id': 0, 'color': {'r': 0, 'g': 1, 'b': 0}, 'tiles': [], 'units': []};
+let enemy = {'id': 1, 'color': {'r': 1, 'g': 0, 'b': 0}, 'tiles': [], 'units': []};
 
 // variables regarding instance arrays of hexes
 // NOTE: in progress
@@ -98,6 +99,8 @@ window.onkeydown = function(e) {
 	key_state[e.key]=true;
 
 	if (e.key === 'g') grid_mode = !grid_mode;
+
+	if (e.key === 'm') full_map_revealed = !full_map_revealed;
 
 	if (e.key === '1')
 	{
@@ -247,31 +250,9 @@ document.addEventListener("mouseup", function(e){
 	}
 
 
+	// TODO: handle mouse drag to move screen
 	if (e.which == 3 && clicked_tile)
 	{
-		// toggle seen state
-		/*
-		let neighbors = hex_get_neighbors(clicked_tile);
-
-		if (clicked_tile.seen)
-		{
-			clicked_tile.seen = 0;
-			for (let hex of neighbors)
-			{
-				hex.seen = 0;
-			}
-		}
-		else
-		{
-			clicked_tile.seen = 1;
-			for (let hex of neighbors)
-			{
-				hex.seen = 1;
-			}
-		}
-		instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
-		*/
-
 		// create area of owned tiles
 		let neighbors = hex_get_neighbors(clicked_tile);
 

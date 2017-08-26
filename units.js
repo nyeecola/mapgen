@@ -24,10 +24,18 @@ function create_unit(owner, unit_name, x, y)
 				let current_tile = hexes[unit.x * rows + unit.y];
 				let neighbors = hex_get_neighbors(current_tile);
 
-				current_tile.seen += 1;
+				if (!current_tile.seen.hasOwnProperty(owner.id))
+				{
+					current_tile.seen[owner.id] = 0;
+				}
+				current_tile.seen[owner.id] += 1;
 				for (let hex of neighbors)
 				{
-					hex.seen += 1;
+					if (!hex.seen.hasOwnProperty(owner.id))
+					{
+						hex.seen[owner.id] = 0;
+					}
+					hex.seen[owner.id] += 1;
 				}
 				instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
 			}
@@ -49,10 +57,10 @@ function move_unit(unit, x, y)
 	current_tile = hexes[unit.x * rows + unit.y];
 	neighbors = hex_get_neighbors(current_tile);
 
-	current_tile.seen -= 1;
+	current_tile.seen[unit.owner.id] -= 1;
 	for (let hex of neighbors)
 	{
-		hex.seen -= 1;
+		hex.seen[unit.owner.id] -= 1;
 	}
 
 	// TODO: maybe also return an error code on out of bounds?
@@ -62,10 +70,18 @@ function move_unit(unit, x, y)
 	current_tile = hexes[unit.x * rows + unit.y];
 	neighbors = hex_get_neighbors(current_tile);
 
-	current_tile.seen += 1;
+	if (!current_tile.seen.hasOwnProperty(unit.owner.id))
+	{
+		current_tile.seen[unit.owner.id] = 0;
+	}
+	current_tile.seen[unit.owner.id] += 1;
 	for (let hex of neighbors)
 	{
-		hex.seen += 1;
+		if (!hex.seen.hasOwnProperty(unit.owner.id))
+		{
+			hex.seen[unit.owner.id] = 0;
+		}
+		hex.seen[unit.owner.id] += 1;
 	}
 
 	instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);

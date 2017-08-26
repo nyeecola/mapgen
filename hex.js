@@ -9,7 +9,7 @@ function create_hex(x, y, grid_x, grid_y, elevation)
 		'type': null, // should call change_tile_type() to change after creation
 		'moisture': null, // should not be changed after creation (for now)
 		'elevation': null, // should not be changed after creation (for now)
-	        'seen': 0,
+	        'seen': {},
 		'owner': null}; // should call change_tile_owner()
 }
 
@@ -52,7 +52,14 @@ function create_hexes_instance_arrays(hexes)
 		hexes_instance_arrays[hex.type][hex_types_current[hex.type] + 3] = hex_types[hex.type][0];
 		hexes_instance_arrays[hex.type][hex_types_current[hex.type] + 4] = hex_types[hex.type][1];
 		hexes_instance_arrays[hex.type][hex_types_current[hex.type] + 5] = hex_types[hex.type][2];
-		hexes_instance_arrays[hex.type][hex_types_current[hex.type] + 6] = hex.seen;
+		if (hex.seen.hasOwnProperty(player.id))
+		{
+			hexes_instance_arrays[hex.type][hex_types_current[hex.type] + 6] = hex.seen[player.id];
+		}
+		else
+		{
+			hexes_instance_arrays[hex.type][hex_types_current[hex.type] + 6] = -1;
+		}
 		hex_types_current[hex.type] += 7;
 	}
 
