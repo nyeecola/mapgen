@@ -10,6 +10,13 @@ function update_and_render(time)
 
 	// update
 	{
+		AI_timer += dt;
+		if (AI_timer > 4000)
+		{
+			AI_timer -= 4000;
+			AI_do_action(enemy);
+		}
+
 		if ('ArrowRight' in key_state && key_state['ArrowRight'])
 		{
 			camera.x -= dt * camera.speed;
@@ -89,6 +96,13 @@ function update_and_render(time)
 
 			// --- SETTLER ---
 			for (let unit of player.units)
+			{
+				if (unit.name === 'settler')
+				{
+					draw_settler(unit.x, unit.y);
+				}
+			}
+			for (let unit of enemy.units)
 			{
 				if (unit.name === 'settler')
 				{
@@ -365,6 +379,7 @@ function main()
 	create_unit(player, 'settler', 40, 40);
 	create_unit(player, 'settler', 35, 40);
 	selected_unit = player.units[0];
+	create_unit(enemy, 'settler', 45, 42);
 	change_tile_owner(hexes[20 * rows + 20], enemy);
 	change_tile_owner(hexes[21 * rows + 20], enemy);
 	change_tile_owner(hexes[22 * rows + 20], enemy);

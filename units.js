@@ -41,3 +41,31 @@ function destroy_unit(unit)
 {
 	unit.owner.units.splice(unit.owner.units.indexOf(unit), 1);
 }
+
+function move_unit(unit, x, y)
+{
+	let current_tile, neighbors;
+
+	current_tile = hexes[unit.x * rows + unit.y];
+	neighbors = hex_get_neighbors(current_tile);
+
+	current_tile.seen -= 1;
+	for (let hex of neighbors)
+	{
+		hex.seen -= 1;
+	}
+
+	unit.x = x;
+	unit.y = y;
+
+	current_tile = hexes[unit.x * rows + unit.y];
+	neighbors = hex_get_neighbors(current_tile);
+
+	current_tile.seen += 1;
+	for (let hex of neighbors)
+	{
+		hex.seen += 1;
+	}
+
+	instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
+}

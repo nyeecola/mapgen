@@ -13,6 +13,7 @@
 // add multiple-sprite tile animation
 // add fallback to GPUs without ANGLE_instace_arrays
 // lerp between tiles
+// rework seen to account for who is seeing the tile, not only how many times
 //
 // Maintenance:
 // start using static analysis since JS is bad
@@ -74,7 +75,7 @@ let offset_tex_animation = 0;
 // -- game state
 let selected_unit = null;
 let player = {'color': {'r': 0, 'g': 1, 'b': 0}, 'tiles': [], 'units': []};
-let enemy = {'color': {'r': 1, 'g': 0, 'b': 0}, 'tiles': []};
+let enemy = {'color': {'r': 1, 'g': 0, 'b': 0}, 'tiles': [], 'units': []};
 
 // variables regarding instance arrays of hexes
 // NOTE: in progress
@@ -150,41 +151,24 @@ window.onkeydown = function(e) {
 	// TODO: check boundaries of map/land
 	if (selected_unit !== null)
 	{
-		let moved = false;
-		if (e.key === 'w' || e.key === 'a' || e.key === 's' || e.key === 'd')
-		{
-			let current_tile = hexes[selected_unit.x * rows + selected_unit.y];
-			let neighbors = hex_get_neighbors(current_tile);
-
-			current_tile.seen -= 1;
-			for (let hex of neighbors)
-			{
-				hex.seen -= 1;
-			}
-		}
-
 		if (e.key === 'w')
 		{
-			selected_unit.y += 1;
-			moved = true;
+			move_unit(selected_unit, selected_unit.x, selected_unit.y + 1);
 		}
 
 		if (e.key === 'a')
 		{
-			selected_unit.x -= 1;
-			moved = true;
+			move_unit(selected_unit, selected_unit.x - 1, selected_unit.y);
 		}
 
 		if (e.key === 's')
 		{
-			selected_unit.y -= 1;
-			moved = true;
+			move_unit(selected_unit, selected_unit.x, selected_unit.y - 1);
 		}
 
 		if (e.key === 'd')
 		{
-			selected_unit.x += 1;
-			moved = true;
+			move_unit(selected_unit, selected_unit.x + 1, selected_unit.y);
 		}
 
 		if (e.key === 'b')
@@ -202,19 +186,6 @@ window.onkeydown = function(e) {
 
 			destroy_unit(selected_unit);
 			selected_unit = null;
-		}
-
-		if (moved === true)
-		{
-			let current_tile = hexes[selected_unit.x * rows + selected_unit.y];
-			let neighbors = hex_get_neighbors(current_tile);
-
-			current_tile.seen += 1;
-			for (let hex of neighbors)
-			{
-				hex.seen += 1;
-			}
-			instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
 		}
 	}
 }
