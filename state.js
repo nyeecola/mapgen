@@ -2,7 +2,8 @@
 //
 // Features:
 // add tile/building/unit selection
-// add unit movement with mouse
+// add unit selection and movement with mouse
+// introduce turns
 // add rivers, hills
 // add font/text support
 // create loading screen
