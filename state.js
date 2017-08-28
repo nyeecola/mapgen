@@ -80,189 +80,196 @@ let offset_tex_animation = 0;
 let selected_unit = null;
 let player = {'id': 0, 'color': {'r': 0, 'g': 1, 'b': 0}, 'tiles': [], 'units': []};
 let enemy = {'id': 1, 'color': {'r': 1, 'g': 0, 'b': 0}, 'tiles': [], 'units': []};
+let selected_player = player;
 
 // variables regarding instance arrays of hexes
 // NOTE: in progress
 let hex_types = {
-	'grassland': [0.3, 0.9, 0.3, null],
-	'forest': [0.0, 0.7, 0.0, null],
-	'desert': [1, 1, 0.6, null],
-	'sea': [0.3, 0.62, 1.0, null],
-	'ocean': [0.2, 0.4, 1, null],
-	'mountain': [0.7, 0.7, 0.7, null],
-	'ice': [0.5, 0.9, 1, null]
+    'grassland': [0.3, 0.9, 0.3, null],
+    'forest': [0.0, 0.7, 0.0, null],
+    'desert': [1, 1, 0.6, null],
+    'sea': [0.3, 0.62, 1.0, null],
+    'ocean': [0.2, 0.4, 1, null],
+    'mountain': [0.7, 0.7, 0.7, null],
+    'ice': [0.5, 0.9, 1, null]
 };
 
 window.onkeyup = function(e) {
-	key_state[e.key]=false;
+    key_state[e.key]=false;
 }
 
 window.onkeydown = function(e) {
-	key_state[e.key]=true;
+    key_state[e.key]=true;
 
-	if (e.key === 'g') grid_mode = !grid_mode;
+    if (e.key === 'g') grid_mode = !grid_mode;
 
-	if (e.key === 'm') full_map_revealed = !full_map_revealed;
+    if (e.key === 'm') full_map_revealed = !full_map_revealed;
 
-	if (e.key === '1')
-	{
-		let w = window.innerWidth / 2;
-		let h = window.innerHeight / 2;
-		canvas.width = w;
-		canvas.height = h;
-		gl.viewport(0, 0, w, h);
-	}
+    if (e.key === 'p')
+    {
+        selected_player = (selected_player == player) ? enemy : player;
+        instance_arrays_of_hexes = create_hexes_instance_arrays(hexes);
+    }
 
-	if (e.key === '2')
-	{
-		let w = window.innerWidth * 0.67;
-		let h = window.innerHeight * 0.67;
-		canvas.width = w;
-		canvas.height = h;
-		gl.viewport(0, 0, w, h);
-	}
+    if (e.key === '1')
+    {
+        let w = window.innerWidth / 2;
+        let h = window.innerHeight / 2;
+        canvas.width = w;
+        canvas.height = h;
+        gl.viewport(0, 0, w, h);
+    }
 
-	if (e.key === '3')
-	{
-		let w = window.innerWidth;
-		let h = window.innerHeight;
-		canvas.width = w;
-		canvas.height = h;
-		gl.viewport(0, 0, w, h);
-	}
+    if (e.key === '2')
+    {
+        let w = window.innerWidth * 0.67;
+        let h = window.innerHeight * 0.67;
+        canvas.width = w;
+        canvas.height = h;
+        gl.viewport(0, 0, w, h);
+    }
 
-	if (e.key === '-')
-	{
-		let w = canvas.width * 0.8;
-		let h = canvas.height * 0.8;
-		canvas.width = w;
-		canvas.height = h;
-		gl.viewport(0, 0, w, h);
-	}
+    if (e.key === '3')
+    {
+        let w = window.innerWidth;
+        let h = window.innerHeight;
+        canvas.width = w;
+        canvas.height = h;
+        gl.viewport(0, 0, w, h);
+    }
 
-	// TEST
-	if (e.key === '.')
-	{
-		if (!selected_unit && player.units.length)
-		{
-			selected_unit = player.units[0];
-		}
-		else
-		{
-			selected_unit = player.units[(player.units.indexOf(selected_unit) + 1) % player.units.length];
-		}
-	}
+    if (e.key === '-')
+    {
+        let w = canvas.width * 0.8;
+        let h = canvas.height * 0.8;
+        canvas.width = w;
+        canvas.height = h;
+        gl.viewport(0, 0, w, h);
+    }
 
-	// test-only unit movement
-	// TODO: check boundaries of map/land
-	if (selected_unit !== null)
-	{
-		if (e.key === 'w')
-		{
-			move_unit(selected_unit, selected_unit.x, selected_unit.y + 1);
-		}
+    // TEST
+    if (e.key === '.')
+    {
+        if (!selected_unit && player.units.length)
+        {
+            selected_unit = player.units[0];
+        }
+        else
+        {
+            selected_unit = player.units[(player.units.indexOf(selected_unit) + 1) % player.units.length];
+        }
+    }
 
-		if (e.key === 'a')
-		{
-			move_unit(selected_unit, selected_unit.x - 1, selected_unit.y);
-		}
+    // test-only unit movement
+    // TODO: check boundaries of map/land
+    if (selected_unit !== null)
+    {
+        if (e.key === 'w')
+        {
+            move_unit(selected_unit, selected_unit.x, selected_unit.y + 1);
+        }
 
-		if (e.key === 's')
-		{
-			move_unit(selected_unit, selected_unit.x, selected_unit.y - 1);
-		}
+        if (e.key === 'a')
+        {
+            move_unit(selected_unit, selected_unit.x - 1, selected_unit.y);
+        }
 
-		if (e.key === 'd')
-		{
-			move_unit(selected_unit, selected_unit.x + 1, selected_unit.y);
-		}
+        if (e.key === 's')
+        {
+            move_unit(selected_unit, selected_unit.x, selected_unit.y - 1);
+        }
 
-		if (e.key === 'b')
-		{
-			unit_build(selected_unit);
-			selected_unit = null;
-		}
-	}
+        if (e.key === 'd')
+        {
+            move_unit(selected_unit, selected_unit.x + 1, selected_unit.y);
+        }
+
+        if (e.key === 'b')
+        {
+            unit_build(selected_unit);
+            selected_unit = null;
+        }
+    }
 }
 
 // TODO: handle this inside update? (since I'm using matrixes)
 document.addEventListener("mouseup", function(e){
-	let rect = canvas.getBoundingClientRect();
-	let mouse_x = e.clientX - rect.left;
-	let mouse_y = e.clientY - rect.top;
+    let rect = canvas.getBoundingClientRect();
+    let mouse_x = e.clientX - rect.left;
+    let mouse_y = e.clientY - rect.top;
 
-	let x = (2.0 * mouse_x) / window.innerWidth - 1.0;
-	let y = 1.0 - (2.0 * mouse_y) / window.innerHeight;
-	let z = 1.0;
-	let ray_nds = {'x': x, 'y': y, 'z': z};
+    let x = (2.0 * mouse_x) / window.innerWidth - 1.0;
+    let y = 1.0 - (2.0 * mouse_y) / window.innerHeight;
+    let z = 1.0;
+    let ray_nds = {'x': x, 'y': y, 'z': z};
 
-	let ray_clip = vec4.fromValues(ray_nds.x, ray_nds.y, -1.0, 1.0);
+    let ray_clip = vec4.fromValues(ray_nds.x, ray_nds.y, -1.0, 1.0);
 
-	// TODO: stop rewriting this
-	let projection = mat4.create();
-	projection = mat4.perspective(projection, glMatrix.toRadian(45), gl.drawingBufferWidth / gl.drawingBufferHeight, 0.1, 100);
-	projection = mat4.invert(projection, projection);
+    // TODO: stop rewriting this
+    let projection = mat4.create();
+    projection = mat4.perspective(projection, glMatrix.toRadian(45), gl.drawingBufferWidth / gl.drawingBufferHeight, 0.1, 100);
+    projection = mat4.invert(projection, projection);
 
-	let ray_view = vec4.transformMat4(ray_clip, ray_clip, projection);
-	ray_view = vec4.fromValues(ray_view[0], ray_view[1], -1.0, 0.0);
+    let ray_view = vec4.transformMat4(ray_clip, ray_clip, projection);
+    ray_view = vec4.fromValues(ray_view[0], ray_view[1], -1.0, 0.0);
 
-	// TODO: stop rewriting this
-	let view = mat4.create();
-	view = mat4.scale(view, view, vec3.fromValues(1.0 * camera.zoom, 1.0 * camera.zoom, 1.0));
-	view = mat4.rotate(view, view, glMatrix.toRadian(-50), vec3.fromValues(1.0, 0.0, 0.0));
-	view = mat4.translate(view, view, vec3.fromValues(camera.x, camera.y, camera.z));
-	view = mat4.invert(view, view);
+    // TODO: stop rewriting this
+    let view = mat4.create();
+    view = mat4.scale(view, view, vec3.fromValues(1.0 * camera.zoom, 1.0 * camera.zoom, 1.0));
+    view = mat4.rotate(view, view, glMatrix.toRadian(-50), vec3.fromValues(1.0, 0.0, 0.0));
+    view = mat4.translate(view, view, vec3.fromValues(camera.x, camera.y, camera.z));
+    view = mat4.invert(view, view);
 
-	let temp = vec4.fromValues(0, 0, 0, 0);
-	temp = vec4.transformMat4(temp, ray_view, view);
-	let ray_world = vec3.fromValues(temp[0], temp[1], temp[2]);
-	ray_world = vec3.normalize(ray_world, ray_world);
-
-
-
-	let normal = vec3.fromValues(0, 0, 1);
-	let camera_origin = vec3.fromValues(-camera.x, -camera.y, -camera.z);
-
-	let divisor = vec3.dot(ray_world, normal);
-
-	// TODO
-	//if (vec3.dot(ray_world, normal) == ) handle this being null (does not intersect)
-
-	let t = - (vec3.dot(camera_origin, normal) + 0) / divisor;
-
-	// otherwise intersected behind the view
-	let clicked_tile;
-	if (t >= 0) 
-	{
-		let click_loc = vec3.add(camera_origin, camera_origin, vec3.scale(ray_world, ray_world, t));
-
-		for (let i = 0; i < hexes.length; i++)
-		{
-			let hex = hexes[i];
-			if (Math.pow((hex.x - click_loc[0]), 2) + Math.pow((hex.y - click_loc[1]), 2) < Math.pow(radius, 2))
-			{
-				clicked_tile = hex;
-				let types = Object.keys(hex_types);
-				types.splice(types.indexOf(hex.type), 1);
-				let type = types[Math.floor(Math.random()*types.length)]
-				if (e.which == 1) change_hex_type(hex, type);
-				break;
-			}
-		}
-	}
+    let temp = vec4.fromValues(0, 0, 0, 0);
+    temp = vec4.transformMat4(temp, ray_view, view);
+    let ray_world = vec3.fromValues(temp[0], temp[1], temp[2]);
+    ray_world = vec3.normalize(ray_world, ray_world);
 
 
-	// TODO: handle mouse drag to move screen
-	if (e.which == 3 && clicked_tile)
-	{
-		// create area of owned tiles
-		let neighbors = hex_get_neighbors(clicked_tile);
 
-		change_tile_owner(clicked_tile, player);
-		for (let hex of neighbors)
-		{
-			change_tile_owner(hex, player);
-		}
-	}
+    let normal = vec3.fromValues(0, 0, 1);
+    let camera_origin = vec3.fromValues(-camera.x, -camera.y, -camera.z);
+
+    let divisor = vec3.dot(ray_world, normal);
+
+    // TODO
+    //if (vec3.dot(ray_world, normal) == ) handle this being null (does not intersect)
+
+    let t = - (vec3.dot(camera_origin, normal) + 0) / divisor;
+
+    // otherwise intersected behind the view
+    let clicked_tile;
+    if (t >= 0) 
+    {
+        let click_loc = vec3.add(camera_origin, camera_origin, vec3.scale(ray_world, ray_world, t));
+
+        for (let i = 0; i < hexes.length; i++)
+        {
+            let hex = hexes[i];
+            if (Math.pow((hex.x - click_loc[0]), 2) + Math.pow((hex.y - click_loc[1]), 2) < Math.pow(radius, 2))
+            {
+                clicked_tile = hex;
+                let types = Object.keys(hex_types);
+                types.splice(types.indexOf(hex.type), 1);
+                let type = types[Math.floor(Math.random()*types.length)]
+                if (e.which == 1) change_hex_type(hex, type);
+                break;
+            }
+        }
+    }
+
+
+    // TODO: handle mouse drag to move screen
+    if (e.which == 3 && clicked_tile)
+    {
+        // create area of owned tiles
+        let neighbors = hex_get_neighbors(clicked_tile);
+
+        change_tile_owner(clicked_tile, player);
+        for (let hex of neighbors)
+        {
+            change_tile_owner(hex, player);
+        }
+    }
 });
 
