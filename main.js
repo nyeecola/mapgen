@@ -132,6 +132,11 @@ function update_and_render(time)
             draw_region(player.tiles, player.color);
             draw_region(enemy.tiles, enemy.color);
         }
+
+        // TODO: continue from here
+        let test_verts = new Float32Array([-0.5, -0.5, 1, 1, 0, 0, 1,
+                                           0, 0, 1, 1, 0, 0, 1,
+                                           0, -0.5, 1, 0, 0, 1, 1]);
     }
 
     requestAnimationFrame(update_and_render);
@@ -141,7 +146,9 @@ function main()
 {
     gl = initGL();
     ext.instancing = gl.getExtension('ANGLE_instanced_arrays');
-    shader_program = initShaders(gl);
+    let shaders = initShaders(gl);
+    shader_program = shaders['main'];
+    shader_program_gui = shaders['gui'];
     hexes = [];
 
     // choose elevation position

@@ -39,6 +39,7 @@ let canvas;
 // -- opengl state
 let ext = {};
 let shader_program;
+let shader_program_gui;
 let instance_buffers = {};
 let grid_indices_buffer;
 let grid_shape_buffer;
@@ -101,10 +102,13 @@ window.onkeyup = function(e) {
 window.onkeydown = function(e) {
     key_state[e.key]=true;
 
+    // toggle grid mode
     if (e.key === 'g') grid_mode = !grid_mode;
 
+    // toggle full map revealed mode
     if (e.key === 'm') full_map_revealed = !full_map_revealed;
 
+    // change which player camera to view
     if (e.key === 'p')
     {
         selected_player = (selected_player == player) ? enemy : player;

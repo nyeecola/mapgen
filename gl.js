@@ -1,9 +1,9 @@
 function initGL() {
 	canvas = document.getElementById('canvas');
 
-	var gl = canvas.getContext('webgl');
-	var width = window.innerWidth;
-	var height = window.innerHeight;
+	let gl = canvas.getContext('webgl');
+	let width = window.innerWidth;
+	let height = window.innerHeight;
 
 	canvas.width = width;
 	canvas.height = height;
@@ -28,16 +28,24 @@ function initGL() {
 
 function createShaders(gl, type)
 {
-	var shaderScript = '';
-	var shader;
+	let shaderScript = '';
+	let shader;
 
 	switch(type) {
 		case 'fragment':
 			shaderScript = document.querySelector('#shader-fs').textContent;
 			shader = gl.createShader(gl.FRAGMENT_SHADER);
 			break;
+		case 'fragment-gui':
+			shaderScript = document.querySelector('#shader-fs-gui').textContent;
+			shader = gl.createShader(gl.FRAGMENT_SHADER);
+			break;
 		case 'vertex':
 			shaderScript = document.querySelector('#shader-vs').textContent;
+			shader = gl.createShader(gl.VERTEX_SHADER);
+			break;
+		case 'vertex-gui':
+			shaderScript = document.querySelector('#shader-vs-gui').textContent;
 			shader = gl.createShader(gl.VERTEX_SHADER);
 			break;
 	}
@@ -51,15 +59,17 @@ function createShaders(gl, type)
 
 function initShaders(gl)
 {
-	var vertexShader = createShaders(gl, 'vertex');
-	var fragmentShader = createShaders(gl, 'fragment');
+	let vertexShader = createShaders(gl, 'vertex');
+	let fragmentShader = createShaders(gl, 'fragment');
+	let vertex_shader_gui = createShaders(gl, 'vertex-gui');
+	let fragment_shader_gui = createShaders(gl, 'fragment-gui');
 
-	var shaderProgram = gl.createProgram();
+	let shaderProgram = gl.createProgram();
 	gl.attachShader(shaderProgram, vertexShader);
 	gl.attachShader(shaderProgram, fragmentShader);
 	gl.linkProgram(shaderProgram);
 	console.log(gl.getProgramInfoLog(shaderProgram));
-	return shaderProgram;
+	return {'main': shaderProgram, 'gui': shader_program_gui};
 }
 
 function upload_grid_static_data()
