@@ -11,6 +11,19 @@ function update_and_render(time)
 
     // update
     {
+        // TEST
+        // update HUD
+        if (test_mouse_over.moved)
+        {
+            test_mouse_over.cooldown += dt;
+            if (test_mouse_over.cooldown > 100)
+            {
+                test_mouse_over.cooldown = 0;
+                update_hud();
+                test_mouse_over.moved = false;
+            }
+        }
+
         AI_timer += dt;
         if (AI_timer > 500)
         {
@@ -95,10 +108,16 @@ function update_and_render(time)
             draw_grid_tiles(dt);
 
             // --- MOUNTAINS ---
-            draw_mountains();
+            if (mountains_enabled)
+            {
+                draw_mountains();
+            }
 
             // --- FORESTS --- 
-            draw_forests();
+            if (forests_enabled)
+            {
+                draw_forests();
+            }
 
             // --- UNITS ---
             for (let unit of selected_player.units)
@@ -142,11 +161,11 @@ function update_and_render(time)
         if (test_mouse_over.show)
         {
             let test_verts = [-1, -1, 0, 0, 0, 1, 1,
-                              -1, -1.5, 0, 0, 1, 0, 1,
-                              -0.5, -1, 0, 1, 0, 0, 1,
-                              -0.5, -1, 0, 1, 0, 0, 1,
-                              -1, -1.5, 0, 0, 1, 0, 1,
-                              -0.5, -1.5, 0, 0, 1, 1, 1];
+                              -1, -1.1, 0, 0, 1, 0, 1,
+                              -0.9, -1, 0, 1, 0, 0, 1,
+                              -0.9, -1, 0, 1, 0, 0, 1,
+                              -1, -1.1, 0, 0, 1, 0, 1,
+                              -0.9, -1.1, 0, 0, 1, 1, 1];
 
             // model matrix
             let model = mat4.create();

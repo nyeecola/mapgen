@@ -79,7 +79,9 @@ let grid_mode = false;
 let full_map_revealed = false;
 let offset_tex_animation = 0;
 // TEST
-let test_mouse_over = {'show': false, 'x': 0, 'y': 0};
+let forests_enabled = true;
+let mountains_enabled = true;
+let test_mouse_over = {'moved': false, 'cooldown': 0.3, 'show': false, 'x': 0, 'y': 0};
 
 // -- game state
 let selected_unit = null;
@@ -111,6 +113,12 @@ window.onkeydown = function(e) {
 
     // toggle full map revealed mode
     if (e.key === 'm') full_map_revealed = !full_map_revealed;
+
+    // toggle forests
+    if (e.key === 'f') forests_enabled = !forests_enabled;
+
+    // toggle mountains
+    if (e.key === 'h') mountains_enabled = !mountains_enabled;
 
     // change which player camera to view
     if (e.key === 'p')
@@ -200,18 +208,10 @@ window.onkeydown = function(e) {
     }
 }
 
-// TODO: make this more efficiente, there are many possible improvements:
-// -- set a delay between mousemovement checks (this might have to be done outside this listener)
-// -- check if mouse is moving or is stopped right now (by using the time from last mouse move)
-document.addEventListener('mousemove', function(e) {
-    let rect = canvas.getBoundingClientRect();
-    let mouse_x = e.clientX - rect.left;
-    let mouse_y = e.clientY - rect.top;
-
-    let x = (2.0 * mouse_x) / window.innerWidth - 1.0;
-    let y = 1.0 - (2.0 * mouse_y) / window.innerHeight;
+function update_hud()
+{
     let z = 1.0;
-    let ray_nds = {'x': x, 'y': y, 'z': z};
+    let ray_nds = {'x': test_mouse_over.x, 'y': test_mouse_over.y, 'z': z};
 
     let ray_clip = vec4.fromValues(ray_nds.x, ray_nds.y, -1.0, 1.0);
 
@@ -270,14 +270,29 @@ document.addEventListener('mousemove', function(e) {
             current_tile.seen[selected_player.id] >= 0)
         {
             test_mouse_over.show = true;
-            test_mouse_over.x = x;
-            test_mouse_over.y = y;
         }
         else
         {
             test_mouse_over.show = false;
         }
     }
+}
+
+// TODO: make this more efficient, there are many possible improvements:
+// TODO: create a function for raycasting
+// -- set a delay between mousemovement checks (this might have to be done outside this listener)
+// -- check if mouse is moving or is stopped right now (by using the time from last mouse move)
+document.addEventListener('mousemove', function(e) {
+    let rect = canvas.getBoundingClientRect();
+    let mouse_x = e.clientX - rect.left;
+    let mouse_y = e.clientY - rect.top;
+
+    let x = (2.0 * mouse_x) / window.innerWidth - 1.0;
+    let y = 1.0 - (2.0 * mouse_y) / window.innerHeight;
+
+    test_mouse_over.moved = true;
+    test_mouse_over.x = x;
+    test_mouse_over.y = y;
 });
 
 // TODO: handle this inside update? (since I'm using matrixes)
