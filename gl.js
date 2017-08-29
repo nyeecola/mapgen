@@ -69,6 +69,12 @@ function initShaders(gl)
 	gl.attachShader(shaderProgram, fragmentShader);
 	gl.linkProgram(shaderProgram);
 	console.log(gl.getProgramInfoLog(shaderProgram));
+
+	let shader_program_gui = gl.createProgram();
+	gl.attachShader(shader_program_gui, vertex_shader_gui);
+	gl.attachShader(shader_program_gui, fragment_shader_gui);
+	gl.linkProgram(shader_program_gui);
+	console.log(gl.getProgramInfoLog(shader_program_gui));
 	return {'main': shaderProgram, 'gui': shader_program_gui};
 }
 

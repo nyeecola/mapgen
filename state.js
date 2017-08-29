@@ -52,7 +52,9 @@ let forest_shape_buffer;
 let settler_indices_buffer;
 let settler_shape_buffer;
 let settler_tex_coords_buffer;
+// TEST
 let region_shape_buffer;
+let gui_buffer;
 
 // -- semi-opengl state
 // TODO: create an object to hold textures/meshes
@@ -76,6 +78,8 @@ let max_elevations = 3;
 let grid_mode = false;
 let full_map_revealed = false;
 let offset_tex_animation = 0;
+// TEST
+let test_mouse_over = {'show': false, 'x': 0, 'y': 0};
 
 // -- game state
 let selected_unit = null;
@@ -196,8 +200,88 @@ window.onkeydown = function(e) {
     }
 }
 
+// TODO: make this more efficiente, there are many possible improvements:
+// -- set a delay between mousemovement checks (this might have to be done outside this listener)
+// -- check if mouse is moving or is stopped right now (by using the time from last mouse move)
+document.addEventListener('mousemove', function(e) {
+    let rect = canvas.getBoundingClientRect();
+    let mouse_x = e.clientX - rect.left;
+    let mouse_y = e.clientY - rect.top;
+
+    let x = (2.0 * mouse_x) / window.innerWidth - 1.0;
+    let y = 1.0 - (2.0 * mouse_y) / window.innerHeight;
+    let z = 1.0;
+    let ray_nds = {'x': x, 'y': y, 'z': z};
+
+    let ray_clip = vec4.fromValues(ray_nds.x, ray_nds.y, -1.0, 1.0);
+
+    // TODO: stop rewriting this
+    let projection = mat4.create();
+    projection = mat4.perspective(projection, glMatrix.toRadian(45), gl.drawingBufferWidth / gl.drawingBufferHeight, 0.1, 100);
+    projection = mat4.invert(projection, projection);
+
+    let ray_view = vec4.transformMat4(ray_clip, ray_clip, projection);
+    ray_view = vec4.fromValues(ray_view[0], ray_view[1], -1.0, 0.0);
+
+    // TODO: stop rewriting this
+    let view = mat4.create();
+    view = mat4.scale(view, view, vec3.fromValues(1.0 * camera.zoom, 1.0 * camera.zoom, 1.0));
+    view = mat4.rotate(view, view, glMatrix.toRadian(-50), vec3.fromValues(1.0, 0.0, 0.0));
+    view = mat4.translate(view, view, vec3.fromValues(camera.x, camera.y, camera.z));
+    view = mat4.invert(view, view);
+
+    let temp = vec4.fromValues(0, 0, 0, 0);
+    temp = vec4.transformMat4(temp, ray_view, view);
+    let ray_world = vec3.fromValues(temp[0], temp[1], temp[2]);
+    ray_world = vec3.normalize(ray_world, ray_world);
+
+
+
+    let normal = vec3.fromValues(0, 0, 1);
+    let camera_origin = vec3.fromValues(-camera.x, -camera.y, -camera.z);
+
+    let divisor = vec3.dot(ray_world, normal);
+
+    // TODO
+    //if (vec3.dot(ray_world, normal) == ) handle this being null (does not intersect)
+
+    let t = - (vec3.dot(camera_origin, normal) + 0) / divisor;
+
+    // otherwise intersected behind the view
+    let current_tile;
+    if (t >= 0) 
+    {
+        let mouse_loc = vec3.add(camera_origin, camera_origin, vec3.scale(ray_world, ray_world, t));
+
+        for (let i = 0; i < hexes.length; i++)
+        {
+            let hex = hexes[i];
+            if (Math.pow((hex.x - mouse_loc[0]), 2) + Math.pow((hex.y - mouse_loc[1]), 2) < Math.pow(radius, 2))
+            {
+                current_tile = hex;
+                break;
+            }
+        }
+    }
+
+    if (current_tile)
+    {
+        if (current_tile.seen.hasOwnProperty(selected_player.id) &&
+            current_tile.seen[selected_player.id] >= 0)
+        {
+            test_mouse_over.show = true;
+            test_mouse_over.x = x;
+            test_mouse_over.y = y;
+        }
+        else
+        {
+            test_mouse_over.show = false;
+        }
+    }
+});
+
 // TODO: handle this inside update? (since I'm using matrixes)
-document.addEventListener("mouseup", function(e){
+document.addEventListener('mouseup', function(e){
     let rect = canvas.getBoundingClientRect();
     let mouse_x = e.clientX - rect.left;
     let mouse_y = e.clientY - rect.top;

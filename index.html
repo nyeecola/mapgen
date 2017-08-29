@@ -30,8 +30,6 @@
   }
 </script>
 
-
-
 <script id="shader-vs" type="x-shader/x-vertex">
   attribute vec3 position;
   attribute vec2 p_tex_coord;
@@ -88,11 +86,13 @@
   attribute vec3 position;
   attribute vec4 color;
 
+  uniform mat4 model;
+
   varying vec4 output_color;
 
   void main(void)
   {
-    gl_Position = vec(position, 1.0);
+    gl_Position = model * vec4(position.xyz, 1.0);
     output_color = color;
   }
 </script>

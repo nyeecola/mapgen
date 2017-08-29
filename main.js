@@ -54,11 +54,12 @@ function update_and_render(time)
 
     // render frame
     {
+        let attrib_loc;
+        let uniform_loc;
+
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         gl.useProgram(shader_program);
-        let attrib_loc;
-        let uniform_loc;
 
         // camera view matrix
         let view = mat4.create();
@@ -133,10 +134,41 @@ function update_and_render(time)
             draw_region(enemy.tiles, enemy.color);
         }
 
-        // TODO: continue from here
-        let test_verts = new Float32Array([-0.5, -0.5, 1, 1, 0, 0, 1,
-                                           0, 0, 1, 1, 0, 0, 1,
-                                           0, -0.5, 1, 0, 0, 1, 1]);
+        // ### HUD ###
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+        gl.useProgram(shader_program_gui);
+
+        // TEST
+        if (test_mouse_over.show)
+        {
+            let test_verts = [-1, -1, 0, 0, 0, 1, 1,
+                              -1, -1.5, 0, 0, 1, 0, 1,
+                              -0.5, -1, 0, 1, 0, 0, 1,
+                              -0.5, -1, 0, 1, 0, 0, 1,
+                              -1, -1.5, 0, 0, 1, 0, 1,
+                              -0.5, -1.5, 0, 0, 1, 1, 1];
+
+            // model matrix
+            let model = mat4.create();
+            model = mat4.translate(model, model, vec3.fromValues(1, 1, 0));
+            model = mat4.translate(model, model, vec3.fromValues(test_mouse_over.x, test_mouse_over.y, 0));
+            uniform_loc = gl.getUniformLocation(shader_program_gui, 'model');
+            gl.uniformMatrix4fv(uniform_loc, gl.FALSE, model);
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, gui_buffer);
+            // TODO: remove this from here
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(test_verts), gl.STREAM_DRAW);
+
+            attrib_loc = gl.getAttribLocation(shader_program_gui, 'position');
+            gl.enableVertexAttribArray(attrib_loc);
+            gl.vertexAttribPointer(attrib_loc, 3, gl.FLOAT, gl.FALSE, 7 * 4, 0);
+
+            attrib_loc = gl.getAttribLocation(shader_program_gui, 'color');
+            gl.enableVertexAttribArray(attrib_loc);
+            gl.vertexAttribPointer(attrib_loc, 4, gl.FLOAT, gl.FALSE, 7 * 4, 3 * 4);
+
+            gl.drawArrays(gl.TRIANGLES, 0, test_verts.length/7);
+        }
     }
 
     requestAnimationFrame(update_and_render);
@@ -389,6 +421,7 @@ function main()
     settler_tex_coords_buffer = gl.createBuffer();
     // TEST
     region_shape_buffer = gl.createBuffer();
+    gui_buffer = gl.createBuffer();
 
     // upload static data to GPU
     upload_grid_static_data();
