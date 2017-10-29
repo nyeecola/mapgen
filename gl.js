@@ -365,12 +365,14 @@ function draw_grid_tiles(dt)
 		let model = mat4.create();
 		let hex_width = Math.sqrt(3)/2 * radius;
 		let map_width = 2 * columns * hex_width;
-		model = mat4.translate(model, model, vec3.fromValues(test_loc * map_width, 0, 0));
+		//model = mat4.translate(model, model, vec3.fromValues(test_loc * map_width, 0, 0));
+		model = mat4.translate(model, model, vec3.fromValues(0, 0, 0));
 		uniform_loc = gl.getUniformLocation(shader_program, 'model');
 		gl.uniformMatrix4fv(uniform_loc, gl.FALSE, model);
 		ext.instancing.drawElementsInstancedANGLE(gl.TRIANGLES, 4 * 3, gl.UNSIGNED_SHORT, 0, instance_arrays_of_hexes[array].length/7);
 
 		// TEST
+		/*
 		if (!test_dir)
 		{
 			model = mat4.create();
@@ -387,6 +389,7 @@ function draw_grid_tiles(dt)
 			gl.uniformMatrix4fv(uniform_loc, gl.FALSE, model);
 			ext.instancing.drawElementsInstancedANGLE(gl.TRIANGLES, 4 * 3, gl.UNSIGNED_SHORT, 0, instance_arrays_of_hexes[array].length/7);
 		}
+		*/
 
 		// draw grid outline if grid_mode is enabled
 		if (grid_mode)

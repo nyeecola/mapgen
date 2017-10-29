@@ -81,7 +81,7 @@ let offset_tex_animation = 0;
 // TEST
 let forests_enabled = true;
 let mountains_enabled = true;
-let test_mouse_over = {'moved': false, 'cooldown': 0.3, 'show': false, 'x': 0, 'y': 0};
+let test_mouse_over = {'moved': false, 'cooldown': 0.3, 'show': false, 'x': 0, 'y': 0, 'candidate_x': 0, 'candidate_y': 0};
 
 // -- game state
 let selected_unit = null;
@@ -291,8 +291,9 @@ document.addEventListener('mousemove', function(e) {
     let y = 1.0 - (2.0 * mouse_y) / window.innerHeight;
 
     test_mouse_over.moved = true;
-    test_mouse_over.x = x;
-    test_mouse_over.y = y;
+    test_mouse_over.candidate_x = x;
+    test_mouse_over.candidate_y = y;
+    test_mouse_over.show = false;
 });
 
 // TODO: handle this inside update? (since I'm using matrixes)

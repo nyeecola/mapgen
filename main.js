@@ -1,6 +1,8 @@
 // NOTE: wrap-around test implementation
+/*
 let test_loc = 0;
 let test_dir = 0;
+*/
 
 function update_and_render(time)
 {
@@ -16,8 +18,11 @@ function update_and_render(time)
         if (test_mouse_over.moved)
         {
             test_mouse_over.cooldown += dt;
-            if (test_mouse_over.cooldown > 100)
+            // TODO: make this not hardcoded
+            if (test_mouse_over.cooldown > 700)
             {
+                test_mouse_over.x = test_mouse_over.candidate_x;
+                test_mouse_over.y = test_mouse_over.candidate_y;
                 test_mouse_over.cooldown = 0;
                 update_hud();
                 test_mouse_over.moved = false;
@@ -35,6 +40,7 @@ function update_and_render(time)
         {
             camera.x -= dt * camera.speed;
 
+		/*
             // TEST
             let hex_width = Math.sqrt(3)/2 * radius;
             let map_width = 2 * columns * hex_width;
@@ -42,18 +48,21 @@ function update_and_render(time)
             if (camera.x * -1 <= 0) test_loc -= 1;
             test_dir = parseInt((camera.x * -1) / (map_width / 2)) % 2;
             if (camera.x * -1 <= 0) test_dir = (test_dir + 1) % 2;
+	    */
         }
         if ('ArrowLeft' in key_state && key_state['ArrowLeft'])
         {
             camera.x += dt * camera.speed;
 
             // TEST
+	    /*
             let hex_width = Math.sqrt(3)/2 * radius;
             let map_width = 2 * columns * hex_width;
             test_loc = parseInt((camera.x * -1) / map_width);
             if (camera.x * -1 <= 0) test_loc -= 1;
             test_dir = parseInt((camera.x * -1) / (map_width / 2)) % 2;
             if (camera.x * -1 <= 0) test_dir = (test_dir + 1) % 2;
+	    */
         }
         if ('ArrowUp' in key_state && key_state['ArrowUp'])
             camera.y -= dt * camera.speed;
@@ -169,8 +178,7 @@ function update_and_render(time)
 
             // model matrix
             let model = mat4.create();
-            model = mat4.translate(model, model, vec3.fromValues(1, 1, 0));
-            model = mat4.translate(model, model, vec3.fromValues(test_mouse_over.x, test_mouse_over.y, 0));
+            model = mat4.translate(model, model, vec3.fromValues(1.02 + test_mouse_over.x, 0.94 + test_mouse_over.y, 0));
             uniform_loc = gl.getUniformLocation(shader_program_gui, 'model');
             gl.uniformMatrix4fv(uniform_loc, gl.FALSE, model);
 
